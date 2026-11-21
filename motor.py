@@ -18,7 +18,9 @@ class TutorAdaptativo:
         self.nivel = 1
         self.errores_por_alg = {"BFS": 0, "DFS": 0, "Dijkstra": 0}
         self.trampa_dijkstra = False
-        self.ultimo_mensaje = "Pulsa 'Paso >' para que te explique paso a paso, o cambia a 'Modo Oráculo' para ponerte a prueba."
+        self.ultimo_mensaje = (
+            "Pulsa 'Paso >' para que te explique paso a paso, o cambia a 'Modo Oráculo' para ponerte a prueba."
+        )
         self.ultimo_tipo = "info"
 
     def registrar_acierto(self, algoritmo: str, nodo: str):
@@ -36,7 +38,15 @@ class TutorAdaptativo:
             self.ultimo_mensaje = f"Correcto: {algoritmo} elige '{nodo}'. Racha actual: {self.racha}."
         self.ultimo_tipo = "ok"
 
-    def registrar_error(self, algoritmo: str, elegido: str, validos: list, costos: dict, desempate: str, min_costo=None):
+    def registrar_error(
+        self,
+        algoritmo: str,
+        elegido: str,
+        validos: list,
+        costos: dict,
+        desempate: str,
+        min_costo=None,
+    ):
         self.errores += 1
         self.racha = 0
         self.errores_por_alg[algoritmo] += 1
@@ -102,7 +112,15 @@ class TutorAdaptativo:
 # =========================================================
 
 class SimuladorPasoAPaso:
-    def __init__(self, grafo: dict, inicio: str, destino: str | None, algoritmo: str, usar_meta: bool, desempate: str):
+    def __init__(
+        self,
+        grafo: dict,
+        inicio: str,
+        destino: str | None,
+        algoritmo: str,
+        usar_meta: bool,
+        desempate: str,
+    ):
         self.grafo = grafo
         self.inicio = inicio
         self.destino = destino if usar_meta else None
@@ -227,11 +245,20 @@ class SimuladorPasoAPaso:
     def _actualizar_guia_siguiente(self, titulo: str, que_paso: str):
         if self.terminado:
             if self.sin_ruta:
-                como = f"La estructura quedó vacía sin llegar a '{self.destino}'. Conecta una unión en el editor y vuelve a probar."
+                como = (
+                    f"La estructura quedó vacía sin llegar a '{self.destino}'. "
+                    "Conecta una unión en el editor y vuelve a probar."
+                )
             elif self.usar_meta:
-                como = f"¡Listo! Siguiendo los padres desde '{self.destino}' hacia atrás reconstruimos la ruta: {' → '.join(self.ruta)}."
+                como = (
+                    f"¡Listo! Siguiendo los padres desde '{self.destino}' hacia atrás "
+                    f"reconstruimos la ruta: {' → '.join(self.ruta)}."
+                )
             else:
-                como = f"¡Recorrido terminado! Visitamos los {len(self.orden_visita)} nodos alcanzables en el orden: {' → '.join(self.orden_visita)}."
+                como = (
+                    f"¡Recorrido terminado! Visitamos los {len(self.orden_visita)} nodos alcanzables "
+                    f"en el orden: {' → '.join(self.orden_visita)}."
+                )
             self.guia = {"titulo": titulo, "que_paso": que_paso, "como_seguir": como}
             return
 
@@ -304,7 +331,8 @@ class SimuladorPasoAPaso:
                 self.costo_total = len(self.ruta) - 1
                 self._actualizar_guia_siguiente(
                     f"Paso {self.paso}: Meta '{actual}' alcanzada",
-                    f"Sacamos '{actual}' (Nivel L{nivel_act}) de la Cola FIFO y coincide con la meta. Al explorar por capas, BFS garantiza el mínimo número de saltos ({self.costo_total}).",
+                    f"Sacamos '{actual}' (Nivel L{nivel_act}) de la Cola FIFO y coincide con la meta. "
+                    f"Al explorar por capas, BFS garantiza el mínimo número de saltos ({self.costo_total}).",
                 )
                 return
 
@@ -322,7 +350,10 @@ class SimuladorPasoAPaso:
                 desc = f"Sacamos '{actual}' (Nivel L{nivel_act}) del frente de la Cola FIFO. "
 
             if nuevos:
-                desc += f"Descubrimos sus vecinos nuevos {nuevos}, los marcamos en Nivel L{nivel_act + 1} y los metemos al FINAL de la Cola."
+                desc += (
+                    f"Descubrimos sus vecinos nuevos {nuevos}, los marcamos en Nivel L{nivel_act + 1} "
+                    "y los metemos al FINAL de la Cola."
+                )
             else:
                 desc += "Todos sus vecinos ya habían sido descubiertos antes, así que no se agrega nada nuevo a la Cola."
 
@@ -360,7 +391,8 @@ class SimuladorPasoAPaso:
                 self.costo_total = len(self.ruta) - 1
                 self._actualizar_guia_siguiente(
                     f"Paso {self.paso}: Meta '{actual}' encontrada",
-                    f"Sacamos '{actual}' del tope de la Pila LIFO y llegamos a la meta ({self.costo_total} saltos). Ojo: DFS encuentra una ruta válida, pero NO garantiza que sea la más corta.",
+                    f"Sacamos '{actual}' del tope de la Pila LIFO y llegamos a la meta ({self.costo_total} saltos). "
+                    "Ojo: DFS encuentra una ruta válida, pero NO garantiza que sea la más corta.",
                 )
                 return
 
@@ -375,7 +407,10 @@ class SimuladorPasoAPaso:
                 desc = f"Bajamos a '{actual}' desde '{padre}' (tope de la Pila LIFO). "
 
             if nombres_nuevos:
-                desc += f"Apilamos sus vecinos sin visitar {nombres_nuevos} ENCIMA de la Pila para seguir profundizando por esa rama."
+                desc += (
+                    f"Apilamos sus vecinos sin visitar {nombres_nuevos} ENCIMA de la Pila "
+                    "para seguir profundizando por esa rama."
+                )
             else:
                 desc += (
                     f"Callejón sin salida: '{actual}' no tiene vecinos sin visitar. "
@@ -418,7 +453,8 @@ class SimuladorPasoAPaso:
                 self.costo_total = costo_actual
                 self._actualizar_guia_siguiente(
                     f"Paso {self.paso}: Meta '{actual}' asegurada (d={costo_actual})",
-                    f"Al extraer '{actual}' del Min-Heap con d={costo_actual}, como todos los pesos son positivos, ninguna otra ruta puede ser más barata. Costo mínimo garantizado: {costo_actual}.",
+                    f"Al extraer '{actual}' del Min-Heap con d={costo_actual}, como todos los pesos son positivos, "
+                    f"ninguna otra ruta puede ser más barata. Costo mínimo garantizado: {costo_actual}.",
                 )
                 return
 
@@ -530,18 +566,27 @@ class MotorGrafos:
             return {
                 "titulo": "Cómo funciona BFS (Búsqueda en Anchura)",
                 "que_paso": "BFS explora el grafo por capas (L0, L1, L2...) usando una Cola FIFO e ignorando los pesos de las líneas.",
-                "como_seguir": f"Pulsa 'Paso >' para iniciar en '{self.inicio or 'Inicio'}'. En cada paso verás qué vecinos entran al final de la Cola y cuál sale primero por la izquierda.",
+                "como_seguir": (
+                    f"Pulsa 'Paso >' para iniciar en '{self.inicio or 'Inicio'}'. En cada paso verás qué vecinos "
+                    "entran al final de la Cola y cuál sale primero por la izquierda."
+                ),
             }
         if self.algoritmo == "DFS":
             return {
                 "titulo": "Cómo funciona DFS (Búsqueda en Profundidad)",
                 "que_paso": "DFS se mete lo más hondo posible por una rama usando una Pila LIFO. Cuando llega a un callejón sin salida, retrocede (backtracking).",
-                "como_seguir": f"Pulsa 'Paso >' para arrancar en '{self.inicio or 'Inicio'}'. Fíjate cómo siempre extraemos el último bloque apilado a la derecha.",
+                "como_seguir": (
+                    f"Pulsa 'Paso >' para arrancar en '{self.inicio or 'Inicio'}'. Fíjate cómo siempre extraemos "
+                    "el último bloque apilado a la derecha."
+                ),
             }
         return {
             "titulo": "Cómo funciona Dijkstra (Costo Mínimo)",
             "que_paso": "Dijkstra SÍ lee los pesos de cada unión. En cada paso elige el nodo no cerrado con menor distancia acumulada d(x) y revisa si pasar por él abarata a sus vecinos (relajación).",
-            "como_seguir": f"Pulsa 'Paso >' para partir desde '{self.inicio or 'Inicio'}' con d=0. También puedes tocar cualquier línea del mapa para cambiar su peso en vivo.",
+            "como_seguir": (
+                f"Pulsa 'Paso >' para partir desde '{self.inicio or 'Inicio'}' con d=0. En modo 'Mover' puedes "
+                "tocar cualquier línea del mapa para cambiar su peso en vivo."
+            ),
         }
 
     def _siguiente_etiqueta(self) -> str:
@@ -560,7 +605,6 @@ class MotorGrafos:
         self.sim = None
 
     def seleccionar_modulo(self, alg: str):
-        """Entrada dedicada desde el menú inicial de 4 opciones."""
         self.reiniciar_sim()
         self.modo_oraculo = False
         if alg == "BFS":
@@ -575,12 +619,32 @@ class MotorGrafos:
             self.algoritmo = "Dijkstra"
             self.usar_meta = True
             self.cargar_preset("trampa_dijkstra")
-        self.tutor.ultimo_mensaje = f"Módulo {self.algoritmo} listo. Pulsa 'Paso >' para aprender paso a paso o edita el mapa libremente."
+        self.tutor.ultimo_mensaje = (
+            f"Módulo {self.algoritmo} listo. Estás en modo 'Mover': acomoda el grafo o pulsa 'Paso >'."
+        )
         self.tutor.ultimo_tipo = "info"
 
-    def agregar_nodo(self, nx: float, ny: float):
+    def agregar_nodo(self, nx: float, ny: float, nombre: str | None = None) -> tuple[bool, str]:
+        """Crea un nodo validando letra personalizada, duplicados y sugerencia alfabética."""
+        sugerido = self._siguiente_etiqueta()
+        etiqueta = sugerido if nombre is None else str(nombre).strip().upper()
+
+        if not etiqueta:
+            return (
+                False,
+                f"Escribe una letra para el punto. Recuerda que puedes seguir el orden alfabético: la siguiente libre es '{sugerido}'.",
+            )
+
+        if len(etiqueta) > 3 or not etiqueta.isalnum():
+            return (False, "Usa solo letras o números sin espacios (máximo 3 caracteres, ej. A, B, C o A1).")
+
+        if etiqueta in self.grafo:
+            return (
+                False,
+                f"Error: el punto '{etiqueta}' ya existe (repetido). Recuerda seguir el orden alfabético; la siguiente letra disponible es '{sugerido}'.",
+            )
+
         self.reiniciar_sim()
-        etiqueta = self._siguiente_etiqueta()
         self.posiciones[etiqueta] = [round(float(nx), 4), round(float(ny), 4)]
         self.grafo[etiqueta] = {}
         if self.inicio is None:
@@ -588,6 +652,17 @@ class MotorGrafos:
         elif self.destino is None and etiqueta != self.inicio:
             self.destino = etiqueta
         self.titulo_escenario = "Grafo Personalizado"
+
+        if etiqueta != sugerido:
+            self.tutor.ultimo_mensaje = (
+                f"Punto '{etiqueta}' creado. Recordatorio: la siguiente letra libre en orden alfabético era '{sugerido}'."
+            )
+            self.tutor.ultimo_tipo = "info"
+        else:
+            self.tutor.ultimo_mensaje = f"Punto '{etiqueta}' creado siguiendo el orden alfabético."
+            self.tutor.ultimo_tipo = "ok"
+
+        return (True, "")
 
     def mover_nodo(self, nombre: str, nx: float, ny: float):
         if nombre in self.posiciones:
@@ -657,10 +732,14 @@ class MotorGrafos:
         self.reiniciar_sim()
 
         if self.modo_oraculo:
-            self.tutor.ultimo_mensaje = f"Modo Oráculo en {self.algoritmo}: pulsa 'Iniciar Reto' y toca en el mapa el siguiente nodo."
+            self.tutor.ultimo_mensaje = (
+                f"Modo Oráculo en {self.algoritmo}: pulsa 'Iniciar Reto' y toca en el mapa el siguiente nodo."
+            )
             self.tutor.ultimo_tipo = "info"
         else:
-            self.tutor.ultimo_mensaje = f"Modo Guiado en {self.algoritmo}: pulsa 'Paso >' para ir viendo la explicación de cada paso."
+            self.tutor.ultimo_mensaje = (
+                f"Modo Guiado en {self.algoritmo}: pulsa 'Paso >' para ver la explicación de cada paso."
+            )
             self.tutor.ultimo_tipo = "info"
 
     def iniciar_o_avanzar(self) -> dict:
@@ -869,6 +948,7 @@ class MotorGrafos:
             "posiciones": self.posiciones,
             "inicio": self.inicio,
             "destino": self.destino,
+            "siguiente_letra": self._siguiente_etiqueta(),
             "algoritmo": self.algoritmo,
             "modo_oraculo": self.modo_oraculo,
             "usar_meta": self.usar_meta,
@@ -893,8 +973,6 @@ def euclides_extendido(a: int, b: int) -> tuple[int, int, int]:
 
 
 class MotorEuclides:
-    """Ejecuta y enseña paso a paso el Algoritmo de Euclides en Modo Guiado y Modo Práctica."""
-
     def __init__(self):
         self.a_orig = 252
         self.b_orig = 105
@@ -909,7 +987,9 @@ class MotorEuclides:
         self.aciertos = 0
         self.errores = 0
         self.racha = 0
-        self.mensaje_tutor = "Listo. Pulsa 'Siguiente Paso >' para aprender cómo dividir y desplazar, o pasa a 'Modo Práctica'."
+        self.mensaje_tutor = (
+            "Listo. Pulsa 'Siguiente Paso >' para aprender cómo dividir y desplazar, o pasa a 'Modo Práctica'."
+        )
         self.tipo_tutor = "info"
         self.guia = {}
         self.iniciar(252, 105, False)
@@ -1072,9 +1152,13 @@ class MotorEuclides:
             )
         elif q_user != q_real:
             if q_user * b > a:
-                self.mensaje_tutor = f"Te pasaste en el cociente: {q_user} × {b} = {q_user * b}, que es mayor que {a}. Prueba un número menor."
+                self.mensaje_tutor = (
+                    f"Te pasaste en el cociente: {q_user} × {b} = {q_user * b}, que es mayor que {a}. Prueba un número menor."
+                )
             else:
-                self.mensaje_tutor = f"Te faltó en el cociente: con {q_user} sobra {a - q_user * b}, todavía cabe {b} al menos una vez más."
+                self.mensaje_tutor = (
+                    f"Te faltó en el cociente: con {q_user} sobra {a - q_user * b}, todavía cabe {b} al menos una vez más."
+                )
         else:
             self.mensaje_tutor = (
                 f"¡El cociente ({q_real}) está perfecto! Solo falló la resta del residuo: "
@@ -1140,7 +1224,14 @@ _euclides = MotorEuclides()
 # API Grafos
 def api_estado(): return json.dumps(_motor.estado())
 def api_seleccionar_modulo_grafo(alg): _motor.seleccionar_modulo(alg); return json.dumps(_motor.estado())
-def api_agregar_nodo(nx, ny): _motor.agregar_nodo(nx, ny); return json.dumps(_motor.estado())
+def api_agregar_nodo(nx, ny, nombre=""):
+    ok, error = _motor.agregar_nodo(nx, ny, nombre)
+    return json.dumps({
+        "ok": ok,
+        "error": error,
+        "sugerido": _motor._siguiente_etiqueta(),
+        "estado": _motor.estado(),
+    })
 def api_mover_nodo(nombre, nx, ny): _motor.mover_nodo(nombre, nx, ny); return json.dumps(_motor.estado())
 def api_eliminar_nodo(nombre): _motor.eliminar_nodo(nombre); return json.dumps(_motor.estado())
 def api_agregar_arista(u, v, peso): _motor.agregar_arista(u, v, peso); return json.dumps(_motor.estado())

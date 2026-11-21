@@ -84,58 +84,27 @@
       width: 100%;
       margin: 0 auto;
     }
-
     .home-hero { text-align: center; margin-bottom: 28px; }
-    .home-hero h1 {
-      margin: 12px 0 8px 0;
-      font-size: clamp(1.6rem, 4vw, 2.35rem);
-      letter-spacing: -0.4px;
-    }
-    .home-hero p {
-      margin: 0 auto;
-      max-width: 620px;
-      color: var(--muted);
-      font-size: 0.98rem;
-      line-height: 1.5;
-    }
+    .home-hero h1 { margin: 12px 0 8px 0; font-size: clamp(1.6rem, 4vw, 2.35rem); letter-spacing: -0.4px; }
+    .home-hero p { margin: 0 auto; max-width: 620px; color: var(--muted); font-size: 0.98rem; line-height: 1.5; }
 
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      width: 100%;
-    }
-    @media (max-width: 720px) {
-      .menu-grid { grid-template-columns: 1fr; gap: 12px; }
-    }
+    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; }
+    @media (max-width: 720px) { .menu-grid { grid-template-columns: 1fr; gap: 12px; } }
 
     .menu-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: left;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 20px; text-align: left; cursor: pointer;
+      display: flex; flex-direction: column; gap: 10px;
       transition: transform 0.14s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     }
-    .menu-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--blue);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-    }
+    .menu-card:hover { transform: translateY(-3px); border-color: var(--blue); box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
     .menu-card.c-bfs:hover { border-color: var(--cyan); }
     .menu-card.c-dfs:hover { border-color: var(--purple); }
     .menu-card.c-dij:hover { border-color: var(--yellow); }
     .menu-card.c-euc:hover { border-color: var(--green); }
 
     .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .tag-mod {
-      font-family: ui-monospace, monospace;
-      font-size: 0.74rem; font-weight: 800; padding: 4px 10px; border-radius: 99px;
-    }
+    .tag-mod { font-family: ui-monospace, monospace; font-size: 0.74rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; }
     .tag-bfs { background: rgba(34, 211, 238, 0.15); color: var(--cyan); }
     .tag-dfs { background: rgba(192, 132, 252, 0.16); color: var(--purple); }
     .tag-dij { background: rgba(250, 204, 21, 0.16); color: var(--yellow); }
@@ -143,63 +112,39 @@
 
     .menu-card h2 { margin: 0; font-size: 1.18rem; color: var(--text); }
     .menu-card p { margin: 0; font-size: 0.88rem; color: var(--muted); line-height: 1.45; }
-    .card-cta {
-      margin-top: auto; padding-top: 6px; font-size: 0.82rem; font-weight: 700; color: var(--blue);
-    }
+    .card-cta { margin-top: auto; padding-top: 6px; font-size: 0.82rem; font-weight: 700; color: var(--blue); }
 
     /* =======================================
        CABECERA Y LAYOUT DE MÓDULOS
        ======================================= */
     .app-header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 14px;
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 10px 14px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
     }
     .brand { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .brand h1 { margin: 0; font-size: 1.02rem; }
     .presets { display: flex; flex-wrap: wrap; gap: 6px; }
 
     .toolbar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 8px 14px;
-      display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 8px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
     }
     .toolbar-label { font-size: 0.74rem; color: var(--muted); font-weight: 700; margin-right: 4px; }
 
     .workspace-grid {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 395px;
-      gap: 12px;
-      padding: 12px;
-      max-width: 1520px;
-      width: 100%;
-      margin: 0 auto;
+      flex: 1; display: grid; grid-template-columns: 1fr 395px; gap: 12px;
+      padding: 12px; max-width: 1520px; width: 100%; margin: 0 auto;
     }
-    @media (max-width: 940px) {
-      .workspace-grid { grid-template-columns: 1fr; padding: 8px; gap: 10px; }
-    }
+    @media (max-width: 940px) { .workspace-grid { grid-template-columns: 1fr; padding: 8px; gap: 10px; } }
 
     .panel { display: flex; flex-direction: column; gap: 10px; }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-    }
-    .card h2 {
-      margin: 0 0 8px 0; font-size: 0.79rem; text-transform: uppercase;
-      letter-spacing: 0.6px; color: var(--muted);
-    }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+    .card h2 { margin: 0 0 8px 0; font-size: 0.79rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
 
     /* Caja de Guía Didáctica Paso a Paso */
     .guide-card {
       background: linear-gradient(180deg, rgba(34, 211, 238, 0.09), rgba(24, 27, 40, 0.98));
-      border: 1px solid rgba(34, 211, 238, 0.4);
-      border-radius: 12px;
-      padding: 12px;
+      border: 1px solid rgba(34, 211, 238, 0.4); border-radius: 12px; padding: 12px;
     }
     .guide-title { font-size: 0.92rem; font-weight: 800; color: var(--cyan); margin: 0 0 8px 0; }
     .guide-block { font-size: 0.84rem; line-height: 1.45; margin-bottom: 7px; color: var(--text); }
@@ -213,16 +158,10 @@
 
     /* Lienzo de Grafos */
     .canvas-card {
-      background: #0b0d14;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      display: flex; flex-direction: column;
-      overflow: hidden;
-      min-height: 490px;
+      background: #0b0d14; border: 1px solid var(--border); border-radius: 12px;
+      display: flex; flex-direction: column; overflow: hidden; min-height: 490px;
     }
-    @media (max-width: 940px) {
-      .canvas-card { min-height: 360px; height: 50dvh; }
-    }
+    @media (max-width: 940px) { .canvas-card { min-height: 360px; height: 50dvh; } }
     .canvas-banner {
       padding: 7px 12px; font-size: 0.79rem; font-weight: 600;
       background: rgba(24, 27, 40, 0.94); border-bottom: 1px solid var(--border);
@@ -238,7 +177,7 @@
     .pill-info.pesos-on {
       background: rgba(250, 204, 21, 0.14); color: var(--yellow); border-color: rgba(250, 204, 21, 0.4);
     }
-    #graphCanvas { flex: 1; width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+    #graphCanvas { flex: 1; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
 
     .seg-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
     .seg-row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 8px; }
@@ -276,10 +215,7 @@
        VISTA 3: ESPACIO DE EUCLIDES
        ======================================= */
     .euc-main { display: flex; flex-direction: column; gap: 12px; }
-
-    .euc-inputs {
-      display: flex; flex-wrap: wrap; align-items: end; gap: 10px;
-    }
+    .euc-inputs { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; }
     .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 110px; }
     .field label { font-size: 0.75rem; color: var(--muted); font-weight: 700; }
     .field input {
@@ -287,65 +223,33 @@
       background: #0f111a; color: var(--text); font-size: 1.05rem;
       font-family: ui-monospace, Consolas, monospace; font-weight: 700; width: 100%;
     }
-
-    .euc-stage {
-      background: #10131f;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-    }
-    .euc-boxes {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 10px;
-    }
-    @media (max-width: 600px) {
-      .euc-boxes { grid-template-columns: repeat(2, 1fr); }
-    }
-    .euc-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 10px;
-      text-align: center;
-    }
+    .euc-stage { background: #10131f; border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .euc-boxes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+    @media (max-width: 600px) { .euc-boxes { grid-template-columns: repeat(2, 1fr); } }
+    .euc-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 10px; text-align: center; }
     .euc-box.hi-a { border-color: var(--blue); }
     .euc-box.hi-b { border-color: var(--yellow); }
     .euc-box.hi-r { border-color: var(--cyan); }
     .euc-box.hi-mcd { border-color: var(--green); background: rgba(74, 222, 128, 0.12); }
     .euc-box span { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; }
-    .euc-box strong {
-      display: block; margin-top: 4px; font-size: 1.45rem;
-      font-family: ui-monospace, Consolas, monospace;
-    }
-
+    .euc-box strong { display: block; margin-top: 4px; font-size: 1.45rem; font-family: ui-monospace, Consolas, monospace; }
     .euc-formula {
-      margin-top: 12px; padding: 10px 12px; border-radius: 8px;
-      background: var(--surface-2); text-align: center;
-      font-family: ui-monospace, Consolas, monospace; font-size: 1.02rem; font-weight: 700;
-      color: var(--yellow);
+      margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--surface-2);
+      text-align: center; font-family: ui-monospace, Consolas, monospace; font-size: 1.02rem; font-weight: 700; color: var(--yellow);
     }
-
     .euc-practice-box {
       margin-top: 12px; padding: 12px; border-radius: 10px;
       background: rgba(192, 132, 252, 0.1); border: 1px solid rgba(192, 132, 252, 0.45);
     }
     .euc-practice-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 8px; }
-
     .euc-table-wrap { overflow-x: auto; }
     .comp-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-    .comp-table th, .comp-table td {
-      padding: 8px 8px; border-bottom: 1px solid var(--border); text-align: left;
-      font-family: ui-monospace, Consolas, monospace;
-    }
+    .comp-table th, .comp-table td { padding: 8px 8px; border-bottom: 1px solid var(--border); text-align: left; font-family: ui-monospace, Consolas, monospace; }
     .comp-table th { color: var(--muted); font-size: 0.73rem; text-transform: uppercase; font-family: system-ui, sans-serif; }
     .row-final { background: rgba(74, 222, 128, 0.12); color: var(--green); font-weight: 700; }
-
     .bezout-banner {
       margin-top: 12px; padding: 10px 12px; border-radius: 8px;
-      background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.45);
-      font-size: 0.86rem; line-height: 1.45;
+      background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.45); font-size: 0.86rem; line-height: 1.45;
     }
 
     /* Modales */
@@ -359,9 +263,10 @@
       padding: 18px; width: 100%; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
     }
     .modal h3 { margin: 0 0 10px 0; font-size: 1.05rem; }
-    .modal input[type="number"] {
+    .modal input[type="number"], .modal input[type="text"] {
       width: 100%; padding: 10px; font-size: 1.1rem; border-radius: 8px;
       border: 1px solid var(--border); background: #0f111a; color: var(--text); margin: 8px 0;
+      font-family: ui-monospace, Consolas, monospace; font-weight: 700;
     }
     .quick-weights { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
@@ -456,8 +361,9 @@
     </header>
 
     <div class="toolbar">
-      <span class="toolbar-label">EDITOR:</span>
-      <button class="tool-btn active" data-tool="editar" onclick="setTool('editar')">+ Crear / Mover</button>
+      <span class="toolbar-label">HERRAMIENTA:</span>
+      <button class="tool-btn active" data-tool="mover" onclick="setTool('mover')">Mover</button>
+      <button class="tool-btn" data-tool="crear" onclick="setTool('crear')">+ Crear Nodo</button>
       <button class="tool-btn" data-tool="conectar" onclick="setTool('conectar')">Conectar Unión</button>
       <button class="tool-btn" data-tool="eliminar" onclick="setTool('eliminar')">Eliminar</button>
       <button class="tool-btn" data-tool="inicio" onclick="setTool('inicio')">Fijar Inicio</button>
@@ -469,7 +375,7 @@
         <div id="canvasBanner" class="canvas-banner">
           <span id="escenarioTitulo">Grafo Base</span>
           <span id="pillPesos" class="pill-info">Pesos ocultos</span>
-          <span id="hintTool" style="color:var(--muted); font-weight:500;">Toca vacío para crear · Arrastra para mover</span>
+          <span id="hintTool" style="color:var(--muted); font-weight:500;">Arrastra los nodos para acomodar el grafo</span>
         </div>
         <canvas id="graphCanvas"></canvas>
       </section>
@@ -566,7 +472,6 @@
 
     <main class="workspace-grid">
       <section class="euc-main">
-        <!-- Entradas y controles -->
         <div class="card">
           <h2>1. Elige tus dos números enteros</h2>
           <div class="euc-inputs">
@@ -593,7 +498,6 @@
           </div>
         </div>
 
-        <!-- Pizarra Visual de la División Actual -->
         <div class="euc-stage">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
             <span style="font-size:0.8rem; color:var(--muted); font-weight:700; text-transform:uppercase;">
@@ -623,7 +527,6 @@
 
           <div id="eucFormula" class="euc-formula">Pulsa "Siguiente Paso" para calcular 252 ÷ 105</div>
 
-          <!-- Zona Interactiva de Práctica -->
           <div id="eucPracticeBox" class="euc-practice-box hidden">
             <div id="eucPracticePrompt" style="font-weight:700; font-size:0.92rem; color:var(--purple);"></div>
             <div class="euc-practice-row">
@@ -640,11 +543,9 @@
             </div>
           </div>
 
-          <!-- Resultado Final + Bézout -->
           <div id="eucBezoutBox" class="bezout-banner hidden"></div>
         </div>
 
-        <!-- Tabla de Traza -->
         <div class="card">
           <h2>2. Tabla de Traza (Historial de Divisiones)</h2>
           <div class="euc-table-wrap">
@@ -667,7 +568,6 @@
         </div>
       </section>
 
-      <!-- Panel derecho de Euclides: Guía + Tutor -->
       <aside class="panel">
         <div class="guide-card">
           <div id="eucGuideTitle" class="guide-title">Guía paso a paso</div>
@@ -699,6 +599,33 @@
       </aside>
     </main>
   </section>
+
+  <!-- Modal Crear Nodo con Letra Personalizada -->
+  <div id="nodeModal" class="modal-backdrop">
+    <div class="modal">
+      <h3>Crear nuevo punto (nodo)</h3>
+      <p style="margin:0; font-size:0.85rem; color:var(--muted); line-height:1.4;">
+        Elige la letra del nodo. Para mantener el orden alfabético, la siguiente letra disponible es
+        <strong id="nodeSugeridaTxt" style="color:var(--cyan);">A</strong>:
+      </p>
+      <input
+        id="nodeNameInput"
+        type="text"
+        maxlength="3"
+        autocomplete="off"
+        placeholder="Ej: A, B, C..."
+        style="text-transform:uppercase;"
+      />
+      <div id="nodeModalError" class="tutor-box error hidden" style="margin:4px 0 8px 0; font-size:0.82rem;"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px;">
+        <button id="btnUsarSugerida" onclick="usarLetraSugerida()">Usar sugerida</button>
+        <div style="display:flex; gap:8px;">
+          <button onclick="cerrarModalNodo()">Cancelar</button>
+          <button class="btn-green" onclick="confirmarNodo()">Crear Punto</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal Peso de Unión -->
   <div id="weightModal" class="modal-backdrop">
@@ -736,9 +663,10 @@
   let state = null;
   let eucState = null;
 
-  let currentTool = 'editar';
+  let currentTool = 'mover';
   let connectOrigin = null;
   let pendingEdge = null;
+  let pendingNodePos = null;
   let autoTimer = null;
   let eucAutoTimer = null;
 
@@ -802,6 +730,7 @@
       document.getElementById('euclidesView').classList.add('hidden');
       document.getElementById('graphView').classList.remove('hidden');
       state = pyCall('api_seleccionar_modulo_grafo', modulo);
+      setTool('mover'); // Siempre arranca en modo seguro de interacción
       resizeCanvas();
       syncGraphUI();
     }
@@ -869,27 +798,30 @@
     const [px, py] = getPointerPos(e);
     const hitNode = nodeAt(px, py);
 
+    // En Modo Oráculo activo, tocar un nodo siempre evalúa la predicción
     if (state.modo_oraculo && state.sim && !state.sim.terminado && hitNode) {
       state = pyCall('api_intentar_oraculo', hitNode);
       syncGraphUI();
       return;
     }
 
-    if (currentTool === 'editar') {
+    if (currentTool === 'mover') {
       if (hitNode) {
         draggingNode = hitNode;
         dragStartPx = [px, py];
         didDrag = false;
-      } else {
-        if (state.algoritmo === 'Dijkstra') {
-          const hitEdge = edgeAt(px, py);
-          if (hitEdge) { abrirModalPeso(hitEdge[0], hitEdge[1]); return; }
-        }
-        stopAuto();
-        const [nx, ny] = toNorm(px, py);
-        state = pyCall('api_agregar_nodo', nx, ny);
-        syncGraphUI();
+        canvas.style.cursor = 'grabbing';
+      } else if (state.algoritmo === 'Dijkstra') {
+        // En Mover + Dijkstra, tocar una unión permite editar su peso rápido
+        const hitEdge = edgeAt(px, py);
+        if (hitEdge) abrirModalPeso(hitEdge[0], hitEdge[1]);
       }
+    } else if (currentTool === 'crear') {
+      if (hitNode) {
+        return;
+      }
+      const [nx, ny] = toNorm(px, py);
+      abrirModalNodo(nx, ny);
     } else if (currentTool === 'conectar') {
       if (!hitNode) { connectOrigin = null; draw(); return; }
       if (!connectOrigin) { connectOrigin = hitNode; draw(); }
@@ -935,8 +867,10 @@
     }
     draggingNode = null;
     didDrag = false;
+    if (currentTool === 'mover') canvas.style.cursor = 'grab';
   });
 
+  // Atajo PC: clic derecho elimina rápido
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     if (!state) return;
@@ -949,18 +883,30 @@
   });
 
   const HINTS = {
-    editar: 'Toca vacío para crear · Arrastra para mover',
-    conectar: 'Toca nodo origen y nodo destino para unir',
-    eliminar: 'Toca un nodo o una unión para eliminar',
+    mover: 'Arrastra los nodos para acomodar el grafo (modo seguro)',
+    crear: 'Toca un espacio vacío para elegir letra y crear un nodo',
+    conectar: 'Toca el nodo origen y luego el nodo destino para unir',
+    eliminar: 'Toca un nodo o una línea para eliminar',
     inicio: 'Toca el nodo que será el INICIO',
     destino: 'Toca el nodo que será la META'
+  };
+
+  const CURSORS = {
+    mover: 'grab',
+    crear: 'crosshair',
+    conectar: 'pointer',
+    eliminar: 'pointer',
+    inicio: 'pointer',
+    destino: 'pointer'
   };
 
   function setTool(tool) {
     currentTool = tool;
     connectOrigin = null;
+    draggingNode = null;
     document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
     document.getElementById('hintTool').textContent = HINTS[tool];
+    canvas.style.cursor = CURSORS[tool] || 'default';
     draw();
   }
 
@@ -1010,6 +956,65 @@
   function cargarPreset(nombre) { stopAuto(); connectOrigin = null; state = pyCall('api_cargar_preset', nombre); syncGraphUI(); }
   function limpiarTodo() { stopAuto(); connectOrigin = null; state = pyCall('api_limpiar_todo'); syncGraphUI(); }
 
+  // ---------- Modal Crear Nodo ----------
+  function abrirModalNodo(nx, ny) {
+    pendingNodePos = [nx, ny];
+    const sugerida = state.siguiente_letra || 'A';
+    document.getElementById('nodeSugeridaTxt').textContent = sugerida;
+    document.getElementById('btnUsarSugerida').textContent = `Usar sugerida (${sugerida})`;
+    const errBox = document.getElementById('nodeModalError');
+    errBox.classList.add('hidden');
+    errBox.textContent = '';
+
+    const inp = document.getElementById('nodeNameInput');
+    inp.value = sugerida;
+    document.getElementById('nodeModal').classList.add('open');
+    setTimeout(() => { inp.focus(); inp.select(); }, 50);
+  }
+
+  function usarLetraSugerida() {
+    const sugerida = state.siguiente_letra || 'A';
+    const inp = document.getElementById('nodeNameInput');
+    inp.value = sugerida;
+    document.getElementById('nodeModalError').classList.add('hidden');
+    inp.focus();
+  }
+
+  function cerrarModalNodo() {
+    pendingNodePos = null;
+    document.getElementById('nodeModal').classList.remove('open');
+    draw();
+  }
+
+  function confirmarNodo() {
+    if (!pendingNodePos) return;
+    const inp = document.getElementById('nodeNameInput');
+    const letra = inp.value.trim().toUpperCase();
+    stopAuto();
+
+    const res = pyCall('api_agregar_nodo', pendingNodePos[0], pendingNodePos[1], letra);
+    if (!res.ok) {
+      const errBox = document.getElementById('nodeModalError');
+      errBox.textContent = res.error;
+      errBox.classList.remove('hidden');
+      document.getElementById('nodeSugeridaTxt').textContent = res.sugerido;
+      document.getElementById('btnUsarSugerida').textContent = `Usar sugerida (${res.sugerido})`;
+      inp.focus();
+      inp.select();
+      return;
+    }
+
+    state = res.estado;
+    cerrarModalNodo();
+    syncGraphUI();
+  }
+
+  document.getElementById('nodeNameInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') confirmarNodo();
+    if (e.key === 'Escape') cerrarModalNodo();
+  });
+
+  // ---------- Modal Peso ----------
   function abrirModalPeso(u, v) {
     pendingEdge = [u, v];
     const actual = (state.grafo[u] && state.grafo[u][v]) ? state.grafo[u][v] : 5;
@@ -1035,6 +1040,7 @@
     if (e.key === 'Escape') cerrarModalPeso();
   });
 
+  // ---------- Modal Comparador ----------
   function abrirComparador() {
     const res = pyCall('api_comparar');
     const body = document.getElementById('compBody');
@@ -1060,6 +1066,7 @@
   }
   function cerrarComparador() { document.getElementById('compModal').classList.remove('open'); }
 
+  // ---------- Sincronización de UI ----------
   function syncGraphUI() {
     if (!state) return;
     const esDijkstra = state.algoritmo === 'Dijkstra';
@@ -1074,14 +1081,13 @@
     document.getElementById('btnOraculo').classList.toggle('active', state.modo_oraculo);
     document.getElementById('bloqueDesempate').style.display = esDijkstra ? 'none' : 'block';
 
-    // Guía Didáctica Paso a Paso
     document.getElementById('graphGuideTitle').textContent = state.guia.titulo;
     document.getElementById('graphGuideWhat').textContent = state.guia.que_paso;
     document.getElementById('graphGuideNext').textContent = state.guia.como_seguir;
 
     const pill = document.getElementById('pillPesos');
     if (esDijkstra) {
-      pill.textContent = 'Pesos activos (toca una línea para editar)';
+      pill.textContent = 'Pesos activos (en Mover, toca una línea para editar)';
       pill.className = 'pill-info pesos-on';
     } else {
       pill.textContent = `Pesos ocultos (${state.algoritmo} los ignora)`;
@@ -1362,12 +1368,10 @@
     ctrlGuiado.style.display = eucState.modo_practica ? 'none' : 'grid';
     document.getElementById('eucBtnPaso').disabled = eucState.terminado;
 
-    // Guía paso a paso
     document.getElementById('eucGuideTitle').textContent = eucState.guia.titulo;
     document.getElementById('eucGuideWhat').textContent = eucState.guia.que_paso;
     document.getElementById('eucGuideNext').textContent = eucState.guia.como_seguir;
 
-    // Pizarra de valores actuales
     const ultimo = eucState.pasos.length ? eucState.pasos[eucState.pasos.length - 1] : null;
     document.getElementById('eucBadgePaso').textContent = `Paso ${eucState.pasos.length}`;
     document.getElementById('eucValA').textContent = eucState.cur_a;
@@ -1393,7 +1397,6 @@
         `Siguiente división: ${eucState.cur_a} = q × ${eucState.cur_b} + r`;
     }
 
-    // Caja de Práctica
     const pBox = document.getElementById('eucPracticeBox');
     if (eucState.modo_practica && !eucState.terminado) {
       pBox.classList.remove('hidden');
@@ -1403,7 +1406,6 @@
       pBox.classList.add('hidden');
     }
 
-    // Bézout bonus al terminar
     const bBox = document.getElementById('eucBezoutBox');
     if (eucState.terminado && eucState.bezout) {
       bBox.classList.remove('hidden');
@@ -1414,7 +1416,6 @@
       bBox.classList.add('hidden');
     }
 
-    // Tabla de traza
     const tbody = document.getElementById('eucTablaBody');
     if (eucState.pasos.length === 0) {
       tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted); font-family:system-ui;">Aún no se han ejecutado pasos.</td></tr>';
@@ -1431,7 +1432,6 @@
       `).join('');
     }
 
-    // Tutor
     const t = eucState.tutor;
     const tBox = document.getElementById('eucTutorBox');
     tBox.textContent = t.mensaje;
