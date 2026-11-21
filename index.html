@@ -3,7 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>AlgoLab PY · BFS, DFS, Dijkstra y Euclides Paso a Paso</title>
+  <title>Grafos UT · Laboratorio de Matemáticas Discretas</title>
+  <meta name="theme-color" content="#0f111a" />
+  <meta name="description" content="Grafos UT · Laboratorio interactivo de Matemáticas Discretas en Python: BFS, DFS, Dijkstra y Algoritmo de Euclides paso a paso." />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Grafos UT" />
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
   <style>
     :root {
@@ -270,6 +278,66 @@
     }
     .quick-weights { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+    /* Identidad Grafos UT + Logo Universidad del Tolima */
+    .ut-logo-hero {
+      width: 68px; height: 68px; margin: 0 auto 12px auto;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 18px;
+      padding: 8px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 28px rgba(220, 38, 38, 0.25), 0 0 0 2px rgba(96, 165, 250, 0.35);
+    }
+    .ut-logo-hero img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+    .ut-logo-mini {
+      width: 30px; height: 30px;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 8px;
+      padding: 3px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .ut-logo-mini img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+    .home-sub {
+      font-size: 0.92rem; font-weight: 700; color: var(--cyan);
+      letter-spacing: 0.4px; margin: 0 0 6px 0; text-transform: uppercase;
+    }
+
+    .pwa-bar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px;
+      margin-top: 14px;
+    }
+    .btn-install {
+      background: linear-gradient(135deg, #22d3ee, #60a5fa);
+      color: #09111f; border: none; padding: 9px 16px; border-radius: 10px;
+      font-weight: 800; font-size: 0.85rem;
+      box-shadow: 0 6px 20px rgba(34, 211, 238, 0.28);
+    }
+    .btn-install:hover { filter: brightness(1.06); }
+
+    .credits-footer {
+      margin-top: 26px;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      text-align: center;
+    }
+    .credits-cipa {
+      font-size: 0.82rem; font-weight: 800; color: var(--yellow);
+      letter-spacing: 0.7px; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .credits-names {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px;
+      font-size: 0.86rem; color: var(--text); font-weight: 600;
+    }
+    .credits-names span { white-space: nowrap; }
+    .credits-inst {
+      margin-top: 6px; font-size: 0.76rem; color: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -288,12 +356,21 @@
        ========================================================= -->
   <section id="homeView" class="hidden">
     <div class="home-hero">
-      <span class="badge-py">AlgoLab PY · Motor 100% Python en tu Navegador</span>
+      <div class="ut-logo-hero">
+        <img src="./logo-ut.png" alt="Logo Universidad del Tolima" />
+      </div>
+      <div class="home-sub">Grafos UT · Laboratorio de Matemáticas Discretas</div>
+      <span class="badge-py">Motor 100% Python · Instalable (PWA)</span>
       <h1>¿Qué vas a hacer hoy, amigo?</h1>
       <p>
         Elige el tema que quieres practicar. Cada módulo tiene su propio laboratorio interactivo y te
         enseña <strong>paso a paso qué ocurre y cómo resolver el siguiente paso</strong>.
       </p>
+      <div class="pwa-bar">
+        <button id="btnInstallPwa" class="btn-install hidden" onclick="instalarPwa()">
+          Instalar Grafos UT en este dispositivo
+        </button>
+      </div>
     </div>
 
     <div class="menu-grid">
@@ -337,6 +414,18 @@
         <div class="card-cta" style="color:var(--green);">Entrar a Euclides paso a paso →</div>
       </div>
     </div>
+
+    <footer class="credits-footer">
+      <div class="credits-cipa">CIPA # 1 · Integrantes</div>
+      <div class="credits-names">
+        <span>Juan Ignacio Cortés Ramírez</span>
+        <span>·</span>
+        <span>Ashlee Viviana Parra Barragán</span>
+        <span>·</span>
+        <span>Liseth Prissela Correa Campo</span>
+      </div>
+      <div class="credits-inst">Universidad del Tolima · Matemáticas Discretas</div>
+    </footer>
   </section>
 
   <!-- =========================================================
@@ -346,7 +435,8 @@
     <header class="app-header">
       <div class="brand">
         <button class="btn-home" onclick="volverInicio()">← Inicio</button>
-        <h1 id="graphHeaderTitle">AlgoLab PY · Grafos</h1>
+        <span class="ut-logo-mini"><img src="./logo-ut.png" alt="UT" /></span>
+        <h1 id="graphHeaderTitle">Grafos UT · Grafos</h1>
         <span class="badge-py">Python Real</span>
       </div>
       <div class="presets">
@@ -458,7 +548,8 @@
     <header class="app-header">
       <div class="brand">
         <button class="btn-home" onclick="volverInicio()">← Inicio</button>
-        <h1>Algoritmo de Euclides · MCD Paso a Paso</h1>
+        <span class="ut-logo-mini"><img src="./logo-ut.png" alt="UT" /></span>
+        <h1>Grafos UT · Algoritmo de Euclides (MCD)</h1>
         <span class="badge-py">Python Real</span>
       </div>
       <div class="presets">
@@ -1070,7 +1161,7 @@
   function syncGraphUI() {
     if (!state) return;
     const esDijkstra = state.algoritmo === 'Dijkstra';
-    document.getElementById('graphHeaderTitle').textContent = `AlgoLab PY · ${state.algoritmo}`;
+    document.getElementById('graphHeaderTitle').textContent = `Grafos UT · ${state.algoritmo}`;
 
     document.querySelectorAll('.alg-btn').forEach(b => b.classList.toggle('active', b.dataset.alg === state.algoritmo));
     document.getElementById('btnRecorrido').classList.toggle('active', !state.usar_meta);
@@ -1439,6 +1530,42 @@
     document.getElementById('eucStPrec').textContent = t.precision + '%';
     document.getElementById('eucStRacha').textContent = t.racha;
     document.getElementById('eucStPasos').textContent = eucState.pasos.length;
+  }
+
+
+  // =========================================================
+  // SOPORTE PWA (SERVICE WORKER + BOTÓN DE INSTALACIÓN)
+  // =========================================================
+  let deferredInstallPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btn = document.getElementById('btnInstallPwa');
+    if (btn) btn.classList.remove('hidden');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    const btn = document.getElementById('btnInstallPwa');
+    if (btn) btn.classList.add('hidden');
+  });
+
+  async function instalarPwa() {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    const btn = document.getElementById('btnInstallPwa');
+    if (btn) btn.classList.add('hidden');
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch((err) => {
+        console.warn('Service Worker no registrado:', err);
+      });
+    });
   }
 
   initPyodide();
