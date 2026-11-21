@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>GraphLab PY · Laboratorio Adaptativo de Grafos</title>
+  <title>AlgoLab PY · BFS, DFS, Dijkstra y Euclides Paso a Paso</title>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
   <style>
     :root {
@@ -14,6 +14,7 @@
       --text: #e2e8f0;
       --muted: #94a3b8;
       --blue: #60a5fa;
+      --cyan: #22d3ee;
       --green: #4ade80;
       --yellow: #facc15;
       --red: #f87171;
@@ -33,10 +34,12 @@
       flex-direction: column;
     }
 
-    /* Overlay de carga de Python */
+    .hidden { display: none !important; }
+
+    /* Loader Pyodide */
     #loader {
       position: fixed; inset: 0; z-index: 100;
-      background: rgba(15, 17, 26, 0.96);
+      background: rgba(15, 17, 26, 0.97);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 24px; text-align: center;
     }
@@ -47,24 +50,10 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Header */
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 14px;
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
-    }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand h1 { margin: 0; font-size: 1.05rem; letter-spacing: 0.3px; }
-    .badge-py {
-      font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 99px;
-      background: rgba(96, 165, 250, 0.16); color: var(--blue); border: 1px solid rgba(96, 165, 250, 0.4);
-    }
-
-    .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+    /* Botones generales */
     button {
       border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
-      padding: 7px 11px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+      padding: 7px 11px; border-radius: 8px; font-size: 0.81rem; font-weight: 600;
       cursor: pointer; transition: transform 0.08s, background 0.15s, border-color 0.15s;
     }
     button:active { transform: scale(0.96); }
@@ -74,65 +63,126 @@
     button.btn-yellow { background: var(--yellow); color: #261c00; border-color: var(--yellow); }
     button.btn-purple { background: var(--purple); color: #1d0833; border-color: var(--purple); }
     button.btn-red { background: rgba(248, 113, 113, 0.15); color: var(--red); border-color: rgba(248, 113, 113, 0.45); }
+    button.btn-home { background: rgba(96, 165, 250, 0.14); color: var(--blue); border-color: rgba(96, 165, 250, 0.45); }
 
-    /* Toolbar de edición */
+    .badge-py {
+      font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 99px;
+      background: rgba(96, 165, 250, 0.16); color: var(--blue); border: 1px solid rgba(96, 165, 250, 0.4);
+    }
+
+    /* =======================================
+       VISTA 1: MENÚ INICIAL (4 OPCIONES)
+       ======================================= */
+    #homeView {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 16px;
+      max-width: 1020px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .home-hero { text-align: center; margin-bottom: 28px; }
+    .home-hero h1 {
+      margin: 12px 0 8px 0;
+      font-size: clamp(1.6rem, 4vw, 2.35rem);
+      letter-spacing: -0.4px;
+    }
+    .home-hero p {
+      margin: 0 auto;
+      max-width: 620px;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      width: 100%;
+    }
+    @media (max-width: 720px) {
+      .menu-grid { grid-template-columns: 1fr; gap: 12px; }
+    }
+
+    .menu-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.14s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .menu-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--blue);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+    .menu-card.c-bfs:hover { border-color: var(--cyan); }
+    .menu-card.c-dfs:hover { border-color: var(--purple); }
+    .menu-card.c-dij:hover { border-color: var(--yellow); }
+    .menu-card.c-euc:hover { border-color: var(--green); }
+
+    .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .tag-mod {
+      font-family: ui-monospace, monospace;
+      font-size: 0.74rem; font-weight: 800; padding: 4px 10px; border-radius: 99px;
+    }
+    .tag-bfs { background: rgba(34, 211, 238, 0.15); color: var(--cyan); }
+    .tag-dfs { background: rgba(192, 132, 252, 0.16); color: var(--purple); }
+    .tag-dij { background: rgba(250, 204, 21, 0.16); color: var(--yellow); }
+    .tag-euc { background: rgba(74, 222, 128, 0.16); color: var(--green); }
+
+    .menu-card h2 { margin: 0; font-size: 1.18rem; color: var(--text); }
+    .menu-card p { margin: 0; font-size: 0.88rem; color: var(--muted); line-height: 1.45; }
+    .card-cta {
+      margin-top: auto; padding-top: 6px; font-size: 0.82rem; font-weight: 700; color: var(--blue);
+    }
+
+    /* =======================================
+       CABECERA Y LAYOUT DE MÓDULOS
+       ======================================= */
+    .app-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .brand h1 { margin: 0; font-size: 1.02rem; }
+    .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+
     .toolbar {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       padding: 8px 14px;
       display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
     }
-    .toolbar-label { font-size: 0.75rem; color: var(--muted); font-weight: 700; margin-right: 4px; }
+    .toolbar-label { font-size: 0.74rem; color: var(--muted); font-weight: 700; margin-right: 4px; }
 
-    /* Layout Principal Responsivo */
-    main {
+    .workspace-grid {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 370px;
+      grid-template-columns: 1fr 395px;
       gap: 12px;
       padding: 12px;
-      max-width: 1500px;
+      max-width: 1520px;
       width: 100%;
       margin: 0 auto;
     }
-
-    @media (max-width: 920px) {
-      main { grid-template-columns: 1fr; padding: 8px; gap: 10px; }
+    @media (max-width: 940px) {
+      .workspace-grid { grid-template-columns: 1fr; padding: 8px; gap: 10px; }
     }
 
-    /* Lienzo */
-    .canvas-card {
-      background: #0b0d14;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      position: relative;
-      display: flex; flex-direction: column;
-      overflow: hidden;
-      min-height: 460px;
-    }
-    @media (max-width: 920px) {
-      .canvas-card { min-height: 360px; height: 52dvh; }
-    }
-
-    .canvas-banner {
-      padding: 7px 12px; font-size: 0.8rem; font-weight: 600;
-      background: rgba(24, 27, 40, 0.92); border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center; gap: 8px;
-    }
-    .canvas-banner.oracle-active {
-      background: rgba(192, 132, 252, 0.16); color: var(--purple); border-bottom-color: rgba(192, 132, 252, 0.4);
-    }
-
-    #graphCanvas {
-      flex: 1; width: 100%; height: 100%; display: block;
-      touch-action: none; /* Crucial para arrastrar en celular sin mover la página */
-      cursor: crosshair;
-    }
-
-    /* Panel derecho / inferior */
-    .panel {
-      display: flex; flex-direction: column; gap: 10px;
-    }
+    .panel { display: flex; flex-direction: column; gap: 10px; }
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -140,49 +190,173 @@
       padding: 12px;
     }
     .card h2 {
-      margin: 0 0 8px 0; font-size: 0.82rem; text-transform: uppercase;
+      margin: 0 0 8px 0; font-size: 0.79rem; text-transform: uppercase;
       letter-spacing: 0.6px; color: var(--muted);
     }
 
+    /* Caja de Guía Didáctica Paso a Paso */
+    .guide-card {
+      background: linear-gradient(180deg, rgba(34, 211, 238, 0.09), rgba(24, 27, 40, 0.98));
+      border: 1px solid rgba(34, 211, 238, 0.4);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .guide-title { font-size: 0.92rem; font-weight: 800; color: var(--cyan); margin: 0 0 8px 0; }
+    .guide-block { font-size: 0.84rem; line-height: 1.45; margin-bottom: 7px; color: var(--text); }
+    .guide-block:last-child { margin-bottom: 0; }
+    .guide-tag {
+      display: inline-block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+      padding: 1px 6px; border-radius: 4px; margin-right: 5px;
+      background: rgba(96, 165, 250, 0.2); color: var(--blue);
+    }
+    .guide-tag.next { background: rgba(74, 222, 128, 0.2); color: var(--green); }
+
+    /* Lienzo de Grafos */
+    .canvas-card {
+      background: #0b0d14;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      min-height: 490px;
+    }
+    @media (max-width: 940px) {
+      .canvas-card { min-height: 360px; height: 50dvh; }
+    }
+    .canvas-banner {
+      padding: 7px 12px; font-size: 0.79rem; font-weight: 600;
+      background: rgba(24, 27, 40, 0.94); border-bottom: 1px solid var(--border);
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px;
+    }
+    .canvas-banner.oracle-active {
+      background: rgba(192, 132, 252, 0.16); color: var(--purple); border-bottom-color: rgba(192, 132, 252, 0.4);
+    }
+    .pill-info {
+      font-size: 0.72rem; padding: 2px 8px; border-radius: 99px;
+      background: rgba(34, 211, 238, 0.12); color: var(--cyan); border: 1px solid rgba(34, 211, 238, 0.35);
+    }
+    .pill-info.pesos-on {
+      background: rgba(250, 204, 21, 0.14); color: var(--yellow); border-color: rgba(250, 204, 21, 0.4);
+    }
+    #graphCanvas { flex: 1; width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+
     .seg-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
     .seg-row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 8px; }
-    .ctrl-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 6px; }
+    .ctrl-row { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 6px; }
+    .sub-label { font-size: 0.72rem; color: var(--muted); font-weight: 700; margin: 6px 0 4px 0; }
 
-    /* Chips de Rayos X */
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; min-height: 30px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; min-height: 28px; }
     .chip {
       font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-      font-size: 0.85rem; font-weight: 700;
-      padding: 4px 9px; border-radius: 6px;
+      font-size: 0.83rem; font-weight: 700; padding: 4px 9px; border-radius: 6px;
       background: var(--surface-2); border: 1px solid var(--border); color: var(--blue);
     }
     .chip.next { background: rgba(250, 204, 21, 0.18); color: var(--yellow); border-color: var(--yellow); }
-    .chip.closed { color: var(--muted); border-color: var(--border); }
+    .chip.closed { color: var(--muted); }
 
-    /* Caja de Diagnóstico del Tutor */
+    .recorrido-box {
+      margin-top: 8px; padding: 8px 10px; border-radius: 8px;
+      background: #121521; border: 1px solid var(--border);
+      font-family: ui-monospace, Consolas, monospace; font-size: 0.83rem; color: var(--cyan); line-height: 1.45;
+    }
+
     .tutor-box {
-      font-size: 0.86rem; line-height: 1.4; padding: 10px; border-radius: 8px;
+      font-size: 0.84rem; line-height: 1.45; padding: 10px; border-radius: 8px;
       background: var(--surface-2); border-left: 4px solid var(--blue);
     }
     .tutor-box.ok { border-left-color: var(--green); background: rgba(74, 222, 128, 0.1); }
     .tutor-box.error { border-left-color: var(--red); background: rgba(248, 113, 113, 0.12); }
 
-    .stats-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; text-align: center;
-    }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; text-align: center; }
     .stat { background: #121521; padding: 6px; border-radius: 8px; border: 1px solid var(--border); }
     .stat strong { display: block; font-size: 1rem; color: var(--text); }
     .stat span { font-size: 0.7rem; color: var(--muted); }
 
+    /* =======================================
+       VISTA 3: ESPACIO DE EUCLIDES
+       ======================================= */
+    .euc-main { display: flex; flex-direction: column; gap: 12px; }
+
+    .euc-inputs {
+      display: flex; flex-wrap: wrap; align-items: end; gap: 10px;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 110px; }
+    .field label { font-size: 0.75rem; color: var(--muted); font-weight: 700; }
+    .field input {
+      padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border);
+      background: #0f111a; color: var(--text); font-size: 1.05rem;
+      font-family: ui-monospace, Consolas, monospace; font-weight: 700; width: 100%;
+    }
+
+    .euc-stage {
+      background: #10131f;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .euc-boxes {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    @media (max-width: 600px) {
+      .euc-boxes { grid-template-columns: repeat(2, 1fr); }
+    }
+    .euc-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+    .euc-box.hi-a { border-color: var(--blue); }
+    .euc-box.hi-b { border-color: var(--yellow); }
+    .euc-box.hi-r { border-color: var(--cyan); }
+    .euc-box.hi-mcd { border-color: var(--green); background: rgba(74, 222, 128, 0.12); }
+    .euc-box span { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+    .euc-box strong {
+      display: block; margin-top: 4px; font-size: 1.45rem;
+      font-family: ui-monospace, Consolas, monospace;
+    }
+
+    .euc-formula {
+      margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+      background: var(--surface-2); text-align: center;
+      font-family: ui-monospace, Consolas, monospace; font-size: 1.02rem; font-weight: 700;
+      color: var(--yellow);
+    }
+
+    .euc-practice-box {
+      margin-top: 12px; padding: 12px; border-radius: 10px;
+      background: rgba(192, 132, 252, 0.1); border: 1px solid rgba(192, 132, 252, 0.45);
+    }
+    .euc-practice-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 8px; }
+
+    .euc-table-wrap { overflow-x: auto; }
+    .comp-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    .comp-table th, .comp-table td {
+      padding: 8px 8px; border-bottom: 1px solid var(--border); text-align: left;
+      font-family: ui-monospace, Consolas, monospace;
+    }
+    .comp-table th { color: var(--muted); font-size: 0.73rem; text-transform: uppercase; font-family: system-ui, sans-serif; }
+    .row-final { background: rgba(74, 222, 128, 0.12); color: var(--green); font-weight: 700; }
+
+    .bezout-banner {
+      margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+      background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.45);
+      font-size: 0.86rem; line-height: 1.45;
+    }
+
     /* Modales */
     .modal-backdrop {
-      position: fixed; inset: 0; z-index: 80; background: rgba(0, 0, 0, 0.7);
+      position: fixed; inset: 0; z-index: 80; background: rgba(0, 0, 0, 0.72);
       display: none; align-items: center; justify-content: center; padding: 16px;
     }
     .modal-backdrop.open { display: flex; }
     .modal {
       background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-      padding: 18px; width: 100%; max-width: 440px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      padding: 18px; width: 100%; max-width: 460px; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
     }
     .modal h3 { margin: 0 0 10px 0; font-size: 1.05rem; }
     .modal input[type="number"] {
@@ -191,12 +365,6 @@
     }
     .quick-weights { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
-
-    .comp-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin: 10px 0; }
-    .comp-table th, .comp-table td {
-      padding: 8px 6px; border-bottom: 1px solid var(--border); text-align: left;
-    }
-    .comp-table th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; }
   </style>
 </head>
 <body>
@@ -204,96 +372,339 @@
   <!-- Pantalla de carga Pyodide -->
   <div id="loader">
     <div class="spinner"></div>
-    <h2 id="loaderTitle" style="margin:0 0 6px 0;">Cargando intérprete Python...</h2>
-    <p id="loaderMsg" style="margin:0; color:#94a3b8; max-width:420px; font-size:0.9rem;">
+    <h2 id="loaderTitle" style="margin:0 0 6px 0;">Cargando motor Python...</h2>
+    <p id="loaderMsg" style="margin:0; color:#94a3b8; max-width:440px; font-size:0.9rem;">
       Descargando WebAssembly y montando <code>motor.py</code>. Solo tarda unos segundos la primera vez.
     </p>
   </div>
 
-  <header>
-    <div class="brand">
-      <h1>GraphLab PY</h1>
-      <span class="badge-py">Python Real · WebAssembly</span>
+  <!-- =========================================================
+       VISTA 1: MENÚ INICIAL (4 OPCIONES)
+       ========================================================= -->
+  <section id="homeView" class="hidden">
+    <div class="home-hero">
+      <span class="badge-py">AlgoLab PY · Motor 100% Python en tu Navegador</span>
+      <h1>¿Qué vas a hacer hoy, amigo?</h1>
+      <p>
+        Elige el tema que quieres practicar. Cada módulo tiene su propio laboratorio interactivo y te
+        enseña <strong>paso a paso qué ocurre y cómo resolver el siguiente paso</strong>.
+      </p>
     </div>
-    <div class="presets">
-      <button onclick="cargarPreset('base')">Base</button>
-      <button class="btn-yellow" onclick="cargarPreset('trampa_dijkstra')">Grafo Trampa</button>
-      <button onclick="cargarPreset('red_ospf')">Red OSPF</button>
-      <button class="btn-purple" onclick="cargarPreset('adaptativo')">Reto Adaptativo</button>
-      <button class="btn-red" onclick="limpiarTodo()">Limpiar</button>
+
+    <div class="menu-grid">
+      <div class="menu-card c-bfs" onclick="abrirModulo('BFS')">
+        <div class="card-top">
+          <span class="tag-mod tag-bfs">GRAFOS · COLA FIFO</span>
+          <span style="color:var(--muted); font-size:0.78rem;">Sin pesos</span>
+        </div>
+        <h2>1. BFS (Búsqueda en Anchura)</h2>
+        <p>Recorre el grafo capa por capa (L0, L1, L2...). Ideal para entender recorridos por niveles y rutas con menos saltos.</p>
+        <div class="card-cta" style="color:var(--cyan);">Entrar a BFS paso a paso →</div>
+      </div>
+
+      <div class="menu-card c-dfs" onclick="abrirModulo('DFS')">
+        <div class="card-top">
+          <span class="tag-mod tag-dfs">GRAFOS · PILA LIFO</span>
+          <span style="color:var(--muted); font-size:0.78rem;">Backtracking</span>
+        </div>
+        <h2>2. DFS (Búsqueda en Profundidad)</h2>
+        <p>Profundiza por una rama hasta el fondo y observa exactamente cuándo ocurre el retroceso (backtracking).</p>
+        <div class="card-cta" style="color:var(--purple);">Entrar a DFS paso a paso →</div>
+      </div>
+
+      <div class="menu-card c-dij" onclick="abrirModulo('Dijkstra')">
+        <div class="card-top">
+          <span class="tag-mod tag-dij">GRAFOS · MIN-HEAP</span>
+          <span style="color:var(--muted); font-size:0.78rem;">Con pesos</span>
+        </div>
+        <h2>3. Dijkstra (Ruta de Menor Costo)</h2>
+        <p>Aprende cómo funciona la relajación de aristas y por qué menos saltos no siempre significa menor costo.</p>
+        <div class="card-cta" style="color:var(--yellow);">Entrar a Dijkstra paso a paso →</div>
+      </div>
+
+      <div class="menu-card c-euc" onclick="abrirModulo('Euclides')">
+        <div class="card-top">
+          <span class="tag-mod tag-euc">TEORÍA DE NÚMEROS · MCD</span>
+          <span style="color:var(--muted); font-size:0.78rem;">Guiado + Práctica</span>
+        </div>
+        <h2>4. Algoritmo de Euclides (MCD)</h2>
+        <p>Calcula el Máximo Común Divisor con divisiones y residuos paso a paso, y ponte a prueba resolviendo cada división.</p>
+        <div class="card-cta" style="color:var(--green);">Entrar a Euclides paso a paso →</div>
+      </div>
     </div>
-  </header>
+  </section>
 
-  <div class="toolbar">
-    <span class="toolbar-label">EDITOR:</span>
-    <button class="tool-btn active" data-tool="editar" onclick="setTool('editar')">+ Crear / Mover</button>
-    <button class="tool-btn" data-tool="conectar" onclick="setTool('conectar')">Conectar Unión</button>
-    <button class="tool-btn" data-tool="eliminar" onclick="setTool('eliminar')">Eliminar</button>
-    <button class="tool-btn" data-tool="inicio" onclick="setTool('inicio')">Fijar Inicio</button>
-    <button class="tool-btn" data-tool="destino" onclick="setTool('destino')">Fijar Meta</button>
-  </div>
-
-  <main>
-    <section class="canvas-card">
-      <div id="canvasBanner" class="canvas-banner">
-        <span id="escenarioTitulo">Terreno Base</span>
-        <span id="hintTool" style="color:var(--muted); font-weight:500;">Toca vacío para crear nodo · Arrastra para mover</span>
+  <!-- =========================================================
+       VISTA 2: LABORATORIO DE GRAFOS (BFS / DFS / DIJKSTRA)
+       ========================================================= -->
+  <section id="graphView" class="hidden" style="flex:1; display:flex; flex-direction:column;">
+    <header class="app-header">
+      <div class="brand">
+        <button class="btn-home" onclick="volverInicio()">← Inicio</button>
+        <h1 id="graphHeaderTitle">AlgoLab PY · Grafos</h1>
+        <span class="badge-py">Python Real</span>
       </div>
-      <canvas id="graphCanvas"></canvas>
-    </section>
-
-    <aside class="panel">
-      <!-- Controles Algorítmicos -->
-      <div class="card">
-        <h2>1. Algoritmo y Modo</h2>
-        <div class="seg-row">
-          <button class="alg-btn" data-alg="BFS" onclick="setAlg('BFS')">BFS</button>
-          <button class="alg-btn" data-alg="DFS" onclick="setAlg('DFS')">DFS</button>
-          <button class="alg-btn active" data-alg="Dijkstra" onclick="setAlg('Dijkstra')">Dijkstra</button>
-        </div>
-        <div class="seg-row-2">
-          <button id="btnRayosX" class="active" onclick="setModoOraculo(false)">Modo Rayos X</button>
-          <button id="btnOraculo" onclick="setModoOraculo(true)">Modo Oráculo</button>
-        </div>
-        <div class="ctrl-row">
-          <button id="btnPaso" class="btn-green" onclick="avanzarPaso()">Paso &gt;</button>
-          <button id="btnAuto" onclick="toggleAuto()">Auto</button>
-          <button onclick="reiniciarSim()">Reiniciar</button>
-        </div>
-        <button style="width:100%; margin-top:8px;" class="btn-purple" onclick="abrirComparador()">
-          Comparar BFS vs DFS vs Dijkstra
-        </button>
+      <div class="presets">
+        <button onclick="cargarPreset('base')">Base</button>
+        <button onclick="cargarPreset('anillos_bfs')">Capas BFS</button>
+        <button onclick="cargarPreset('laberinto_dfs')">Ramas DFS</button>
+        <button class="btn-yellow" onclick="cargarPreset('trampa_dijkstra')">Grafo Trampa</button>
+        <button onclick="cargarPreset('red_ospf')">Red OSPF</button>
+        <button class="btn-purple" onclick="cargarPreset('adaptativo')">Reto Adaptativo</button>
+        <button class="btn-red" onclick="limpiarTodo()">Limpiar</button>
       </div>
+    </header>
 
-      <!-- Rayos X en vivo -->
-      <div class="card">
-        <h2>2. Rayos X de Estructura Interna</h2>
-        <div id="xrayMeta" style="font-size:0.82rem; color:var(--muted);">
-          Pulsa <strong>Paso</strong> para inspeccionar la estructura en tiempo real.
-        </div>
-        <div id="xrayEstructuraLabel" style="font-size:0.78rem; color:var(--yellow); margin-top:8px; font-weight:700;"></div>
-        <div id="xrayChips" class="chips"></div>
-        <div id="xrayRuta" style="margin-top:8px; font-size:0.86rem; font-weight:700; color:var(--green);"></div>
-      </div>
+    <div class="toolbar">
+      <span class="toolbar-label">EDITOR:</span>
+      <button class="tool-btn active" data-tool="editar" onclick="setTool('editar')">+ Crear / Mover</button>
+      <button class="tool-btn" data-tool="conectar" onclick="setTool('conectar')">Conectar Unión</button>
+      <button class="tool-btn" data-tool="eliminar" onclick="setTool('eliminar')">Eliminar</button>
+      <button class="tool-btn" data-tool="inicio" onclick="setTool('inicio')">Fijar Inicio</button>
+      <button class="tool-btn" data-tool="destino" onclick="setTool('destino')">Fijar Meta</button>
+    </div>
 
-      <!-- Tutor Adaptativo -->
-      <div class="card">
-        <h2>3. Tutor Adaptativo</h2>
-        <div id="tutorBox" class="tutor-box">Cargando diagnóstico...</div>
-        <div class="stats-grid">
-          <div class="stat"><strong id="stPrecision">100%</strong><span>Precisión</span></div>
-          <div class="stat"><strong id="stRacha">0</strong><span>Racha</span></div>
-          <div class="stat"><strong id="stNivel">1</strong><span>Nivel</span></div>
+    <main class="workspace-grid">
+      <section class="canvas-card">
+        <div id="canvasBanner" class="canvas-banner">
+          <span id="escenarioTitulo">Grafo Base</span>
+          <span id="pillPesos" class="pill-info">Pesos ocultos</span>
+          <span id="hintTool" style="color:var(--muted); font-weight:500;">Toca vacío para crear · Arrastra para mover</span>
         </div>
+        <canvas id="graphCanvas"></canvas>
+      </section>
+
+      <aside class="panel">
+        <!-- Guía Didáctica Paso a Paso -->
+        <div class="guide-card">
+          <div id="graphGuideTitle" class="guide-title">Guía paso a paso</div>
+          <div class="guide-block"><span class="guide-tag">Qué pasa</span><span id="graphGuideWhat"></span></div>
+          <div class="guide-block"><span class="guide-tag next">Cómo seguir</span><span id="graphGuideNext"></span></div>
+        </div>
+
+        <!-- Controles Algorítmicos -->
+        <div class="card">
+          <h2>1. Algoritmo y Controles</h2>
+          <div class="seg-row">
+            <button class="alg-btn" data-alg="BFS" onclick="setAlg('BFS')">BFS</button>
+            <button class="alg-btn" data-alg="DFS" onclick="setAlg('DFS')">DFS</button>
+            <button class="alg-btn" data-alg="Dijkstra" onclick="setAlg('Dijkstra')">Dijkstra</button>
+          </div>
+
+          <div class="sub-label">Objetivo</div>
+          <div class="seg-row-2">
+            <button id="btnRecorrido" onclick="setUsarMeta(false)">Recorrido Completo</button>
+            <button id="btnMeta" onclick="setUsarMeta(true)">Buscar Meta</button>
+          </div>
+
+          <div id="bloqueDesempate">
+            <div class="sub-label">Desempate de vecinos (BFS / DFS)</div>
+            <div class="seg-row-2">
+              <button id="btnDesLibre" onclick="setDesempate('libre')">Libre (Teórico)</button>
+              <button id="btnDesAlfa" onclick="setDesempate('alfabetico')">Alfabético (A→Z)</button>
+            </div>
+          </div>
+
+          <div class="sub-label">Modalidad</div>
+          <div class="seg-row-2">
+            <button id="btnRayosX" onclick="setModoOraculo(false)">Guiado (Rayos X)</button>
+            <button id="btnOraculo" onclick="setModoOraculo(true)">Modo Oráculo</button>
+          </div>
+
+          <div class="ctrl-row">
+            <button id="btnPaso" class="btn-green" onclick="avanzarPaso()">Paso &gt;</button>
+            <button id="btnAuto" onclick="toggleAuto()">Auto</button>
+            <button onclick="reiniciarSim()">Reiniciar</button>
+          </div>
+          <button style="width:100%; margin-top:8px;" class="btn-purple" onclick="abrirComparador()">
+            Comparar BFS vs DFS vs Dijkstra
+          </button>
+        </div>
+
+        <!-- Rayos X -->
+        <div class="card">
+          <h2>2. Rayos X y Secuencia</h2>
+          <div id="xrayMeta" style="font-size:0.81rem; color:var(--muted);"></div>
+          <div id="xrayEstructuraLabel" style="font-size:0.77rem; color:var(--yellow); margin-top:8px; font-weight:700;"></div>
+          <div id="xrayChips" class="chips"></div>
+          <div id="xrayRecorrido" class="recorrido-box" style="display:none;"></div>
+          <div id="xrayRuta" style="margin-top:8px; font-size:0.85rem; font-weight:700; color:var(--green);"></div>
+        </div>
+
+        <!-- Tutor -->
+        <div class="card">
+          <h2>3. Tutor Adaptativo</h2>
+          <div id="tutorBox" class="tutor-box"></div>
+          <div class="stats-grid">
+            <div class="stat"><strong id="stPrecision">100%</strong><span>Precisión</span></div>
+            <div class="stat"><strong id="stRacha">0</strong><span>Racha</span></div>
+            <div class="stat"><strong id="stNivel">1</strong><span>Nivel</span></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </section>
+
+  <!-- =========================================================
+       VISTA 3: LABORATORIO DEL ALGORITMO DE EUCLIDES
+       ========================================================= -->
+  <section id="euclidesView" class="hidden" style="flex:1; display:flex; flex-direction:column;">
+    <header class="app-header">
+      <div class="brand">
+        <button class="btn-home" onclick="volverInicio()">← Inicio</button>
+        <h1>Algoritmo de Euclides · MCD Paso a Paso</h1>
+        <span class="badge-py">Python Real</span>
       </div>
-    </aside>
-  </main>
+      <div class="presets">
+        <button onclick="eucPreset('clasico')">252 y 105</button>
+        <button onclick="eucPreset('mediano')">1071 y 462</button>
+        <button class="btn-yellow" onclick="eucPreset('fibonacci')">Fibonacci (89 y 55)</button>
+        <button onclick="eucPreset('coprimos')">Coprimos (35 y 16)</button>
+        <button onclick="eucPreset('rapido')">48 y 18</button>
+      </div>
+    </header>
+
+    <main class="workspace-grid">
+      <section class="euc-main">
+        <!-- Entradas y controles -->
+        <div class="card">
+          <h2>1. Elige tus dos números enteros</h2>
+          <div class="euc-inputs">
+            <div class="field">
+              <label for="eucInputA">Primer número (a)</label>
+              <input id="eucInputA" type="number" inputmode="numeric" min="0" max="999999999" value="252" />
+            </div>
+            <div class="field">
+              <label for="eucInputB">Segundo número (b)</label>
+              <input id="eucInputB" type="number" inputmode="numeric" min="0" max="999999999" value="105" />
+            </div>
+            <button class="btn-green" style="padding:10px 14px;" onclick="eucAplicarNumeros()">Cargar Números</button>
+          </div>
+
+          <div class="seg-row-2" style="margin-top:10px;">
+            <button id="eucBtnGuiado" class="active" onclick="eucSetModo(false)">Modo Guiado (Paso a Paso)</button>
+            <button id="eucBtnPractica" onclick="eucSetModo(true)">Modo Práctica (Tú calculas)</button>
+          </div>
+
+          <div class="ctrl-row" id="eucControlesGuiado">
+            <button id="eucBtnPaso" class="btn-green" onclick="eucAvanzar()">Siguiente Paso &gt;</button>
+            <button id="eucBtnAuto" onclick="eucToggleAuto()">Auto</button>
+            <button onclick="eucAplicarNumeros()">Reiniciar</button>
+          </div>
+        </div>
+
+        <!-- Pizarra Visual de la División Actual -->
+        <div class="euc-stage">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <span style="font-size:0.8rem; color:var(--muted); font-weight:700; text-transform:uppercase;">
+              Estado actual de la división · <code style="color:var(--cyan)">a = q × b + r</code>
+            </span>
+            <span id="eucBadgePaso" class="pill-info">Paso 0</span>
+          </div>
+
+          <div class="euc-boxes">
+            <div class="euc-box hi-a">
+              <span>Dividendo (a)</span>
+              <strong id="eucValA" style="color:var(--blue)">252</strong>
+            </div>
+            <div class="euc-box hi-b">
+              <span>Divisor (b)</span>
+              <strong id="eucValB" style="color:var(--yellow)">105</strong>
+            </div>
+            <div class="euc-box">
+              <span>Último Cociente (q)</span>
+              <strong id="eucValQ">—</strong>
+            </div>
+            <div class="euc-box hi-r" id="eucBoxR">
+              <span id="eucLblR">Último Residuo (r)</span>
+              <strong id="eucValR" style="color:var(--cyan)">—</strong>
+            </div>
+          </div>
+
+          <div id="eucFormula" class="euc-formula">Pulsa "Siguiente Paso" para calcular 252 ÷ 105</div>
+
+          <!-- Zona Interactiva de Práctica -->
+          <div id="eucPracticeBox" class="euc-practice-box hidden">
+            <div id="eucPracticePrompt" style="font-weight:700; font-size:0.92rem; color:var(--purple);"></div>
+            <div class="euc-practice-row">
+              <div class="field">
+                <label for="eucUserQ">Cociente (q)</label>
+                <input id="eucUserQ" type="number" inputmode="numeric" min="0" placeholder="Ej: 2" />
+              </div>
+              <div class="field">
+                <label for="eucUserR">Residuo (r)</label>
+                <input id="eucUserR" type="number" inputmode="numeric" min="0" placeholder="Ej: 42" />
+              </div>
+              <button class="btn-green" style="padding:10px 14px;" onclick="eucComprobar()">Comprobar</button>
+              <button class="btn-yellow" style="padding:10px 12px;" onclick="eucPedirPista()">Pista</button>
+            </div>
+          </div>
+
+          <!-- Resultado Final + Bézout -->
+          <div id="eucBezoutBox" class="bezout-banner hidden"></div>
+        </div>
+
+        <!-- Tabla de Traza -->
+        <div class="card">
+          <h2>2. Tabla de Traza (Historial de Divisiones)</h2>
+          <div class="euc-table-wrap">
+            <table class="comp-table">
+              <thead>
+                <tr>
+                  <th>Paso</th>
+                  <th>a</th>
+                  <th>b</th>
+                  <th>Ecuación (a = q×b + r)</th>
+                  <th>Residuo (r)</th>
+                  <th>Siguiente acción</th>
+                </tr>
+              </thead>
+              <tbody id="eucTablaBody">
+                <tr><td colspan="6" style="color:var(--muted); font-family:system-ui;">Aún no se han ejecutado pasos.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Panel derecho de Euclides: Guía + Tutor -->
+      <aside class="panel">
+        <div class="guide-card">
+          <div id="eucGuideTitle" class="guide-title">Guía paso a paso</div>
+          <div class="guide-block"><span class="guide-tag">Qué pasa</span><span id="eucGuideWhat"></span></div>
+          <div class="guide-block"><span class="guide-tag next">Cómo seguir</span><span id="eucGuideNext"></span></div>
+        </div>
+
+        <div class="card">
+          <h2>Regla de Oro de Euclides</h2>
+          <p style="margin:0 0 8px 0; font-size:0.84rem; color:var(--muted); line-height:1.5;">
+            1. Divide el primer número <strong>a</strong> entre <strong>b</strong> para hallar cociente <strong>q</strong> y residuo <strong>r</strong>.<br>
+            2. Si <strong>r = 0</strong>, terminas: el MCD es el divisor actual <strong>b</strong>.<br>
+            3. Si <strong>r ≠ 0</strong>, desplazas: <strong>b</strong> pasa a ser el nuevo <strong>a</strong>, y <strong>r</strong> pasa a ser el nuevo <strong>b</strong>. Repite.
+          </p>
+          <div style="font-size:0.78rem; color:var(--yellow); background:#121521; padding:8px; border-radius:8px; border:1px solid var(--border);">
+            Tip de Ingeniería: prueba <strong>Fibonacci (89 y 55)</strong> para ver el peor caso de Euclides (todos los cocientes dan 1).
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Tutor de Práctica</h2>
+          <div id="eucTutorBox" class="tutor-box"></div>
+          <div class="stats-grid">
+            <div class="stat"><strong id="eucStPrec">100%</strong><span>Precisión</span></div>
+            <div class="stat"><strong id="eucStRacha">0</strong><span>Racha</span></div>
+            <div class="stat"><strong id="eucStPasos">0</strong><span>Pasos</span></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </section>
 
   <!-- Modal Peso de Unión -->
   <div id="weightModal" class="modal-backdrop">
     <div class="modal">
       <h3 id="weightTitle">Conectar unión</h3>
-      <p style="margin:0; font-size:0.85rem; color:var(--muted);">Ingresa un peso positivo (entero de 1 a 999):</p>
+      <p style="margin:0; font-size:0.85rem; color:var(--muted);">Ingresa el costo/peso para Dijkstra (entero de 1 a 999):</p>
       <input id="weightInput" type="number" inputmode="numeric" min="1" max="999" value="5" />
       <div class="quick-weights">
         <button onclick="setQuickWeight(1)">1</button>
@@ -311,7 +722,7 @@
 
   <!-- Modal Comparador -->
   <div id="compModal" class="modal-backdrop">
-    <div class="modal" style="max-width:540px;">
+    <div class="modal" style="max-width:580px;">
       <h3>Comparativa en Vivo (Python)</h3>
       <div id="compBody"></div>
       <div class="modal-actions">
@@ -323,12 +734,14 @@
 <script>
   let pyodide = null;
   let state = null;
+  let eucState = null;
+
   let currentTool = 'editar';
   let connectOrigin = null;
   let pendingEdge = null;
   let autoTimer = null;
+  let eucAutoTimer = null;
 
-  // Estado de arrastre táctil/ratón
   let draggingNode = null;
   let dragStartPx = null;
   let didDrag = false;
@@ -348,27 +761,57 @@
   async function initPyodide() {
     try {
       pyodide = await loadPyodide();
-      document.getElementById('loaderMsg').textContent = 'Ejecutando motor.py (BFS, DFS, Dijkstra y Tutor)...';
+      document.getElementById('loaderMsg').textContent = 'Montando motor.py (BFS, DFS, Dijkstra y Euclides)...';
       const resp = await fetch('./motor.py');
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       const code = await resp.text();
       await pyodide.runPythonAsync(code);
 
       state = pyCall('api_estado');
+      eucState = pyCall('api_euc_estado');
       document.getElementById('loader').style.display = 'none';
-      resizeCanvas();
-      syncUI();
+      document.getElementById('homeView').classList.remove('hidden');
     } catch (err) {
       document.querySelector('.spinner').style.display = 'none';
       document.getElementById('loaderTitle').textContent = 'No se pudo cargar motor.py';
       document.getElementById('loaderMsg').innerHTML =
-        'Si estás probando en tu PC local, no abras el archivo con doble clic. ' +
-        'Ejecuta en tu terminal de Ubuntu:<br><br><code>python3 -m http.server 8000</code><br><br>' +
-        'y abre <code>http://localhost:8000</code>. En GitHub Pages funciona directo.<br><small style="color:#f87171">' + err + '</small>';
+        'En tu PC local no abras el archivo con doble clic. Ejecuta en Ubuntu:<br><br>' +
+        '<code>python3 -m http.server 8000</code><br><br>y abre <code>http://localhost:8000</code>. ' +
+        'En GitHub Pages funciona directo.<br><small style="color:#f87171">' + err + '</small>';
     }
   }
 
-  // ---------- Redimensionamiento Retina/Móvil ----------
+  // ---------- Navegación entre Menú Inicial y los 4 Módulos ----------
+  function volverInicio() {
+    stopAuto();
+    eucStopAuto();
+    document.getElementById('graphView').classList.add('hidden');
+    document.getElementById('euclidesView').classList.add('hidden');
+    document.getElementById('homeView').classList.remove('hidden');
+    window.scrollTo(0, 0);
+  }
+
+  function abrirModulo(modulo) {
+    document.getElementById('homeView').classList.add('hidden');
+    if (modulo === 'Euclides') {
+      document.getElementById('graphView').classList.add('hidden');
+      document.getElementById('euclidesView').classList.remove('hidden');
+      eucState = pyCall('api_euc_estado');
+      syncEuclidesUI();
+    } else {
+      document.getElementById('euclidesView').classList.add('hidden');
+      document.getElementById('graphView').classList.remove('hidden');
+      state = pyCall('api_seleccionar_modulo_grafo', modulo);
+      resizeCanvas();
+      syncGraphUI();
+    }
+    window.scrollTo(0, 0);
+  }
+
+  // =========================================================
+  // MÓDULO DE GRAFOS (CANVAS + EDITOR + GUÍA + RAYOS X)
+  // =========================================================
+
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
@@ -382,37 +825,28 @@
   }
   new ResizeObserver(resizeCanvas).observe(canvas);
 
-  // ---------- Coordenadas y Detección Geométrica ----------
   function toPx(nx, ny) { return [nx * W, ny * H]; }
   function toNorm(px, py) {
-    return [
-      Math.max(0.05, Math.min(0.95, px / W)),
-      Math.max(0.07, Math.min(0.93, py / H))
-    ];
+    return [Math.max(0.05, Math.min(0.95, px / W)), Math.max(0.08, Math.min(0.92, py / H))];
   }
-
   function getPointerPos(e) {
     const rect = canvas.getBoundingClientRect();
     return [e.clientX - rect.left, e.clientY - rect.top];
   }
-
   function nodeAt(px, py) {
     if (!state) return null;
-    const hitR = 28; // Generoso para dedos en celular/tablet
     for (const [name, [nx, ny]] of Object.entries(state.posiciones)) {
       const [x, y] = toPx(nx, ny);
-      if (Math.hypot(px - x, py - y) <= hitR) return name;
+      if (Math.hypot(px - x, py - y) <= 28) return name;
     }
     return null;
   }
-
   function distPointSeg(px, py, x1, y1, x2, y2) {
     const dx = x2 - x1, dy = y2 - y1;
     if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
     const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
     return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
   }
-
   function edgeAt(px, py) {
     if (!state) return null;
     const seen = new Set();
@@ -429,17 +863,15 @@
     return null;
   }
 
-  // ---------- Pointer Events (Unifica Ratón, Dedo y Lápiz) ----------
   canvas.addEventListener('pointerdown', (e) => {
     if (!state || e.button === 2) return;
     canvas.setPointerCapture(e.pointerId);
     const [px, py] = getPointerPos(e);
     const hitNode = nodeAt(px, py);
 
-    // Si el Modo Oráculo está esperando predicción, tocar un nodo evalúa el intento
     if (state.modo_oraculo && state.sim && !state.sim.terminado && hitNode) {
       state = pyCall('api_intentar_oraculo', hitNode);
-      syncUI();
+      syncGraphUI();
       return;
     }
 
@@ -449,43 +881,42 @@
         dragStartPx = [px, py];
         didDrag = false;
       } else {
+        if (state.algoritmo === 'Dijkstra') {
+          const hitEdge = edgeAt(px, py);
+          if (hitEdge) { abrirModalPeso(hitEdge[0], hitEdge[1]); return; }
+        }
         stopAuto();
         const [nx, ny] = toNorm(px, py);
         state = pyCall('api_agregar_nodo', nx, ny);
-        syncUI();
+        syncGraphUI();
       }
     } else if (currentTool === 'conectar') {
       if (!hitNode) { connectOrigin = null; draw(); return; }
-      if (!connectOrigin) {
-        connectOrigin = hitNode;
-        draw();
-      } else if (connectOrigin === hitNode) {
+      if (!connectOrigin) { connectOrigin = hitNode; draw(); }
+      else if (connectOrigin === hitNode) { connectOrigin = null; draw(); }
+      else {
+        const u = connectOrigin, v = hitNode;
         connectOrigin = null;
-        draw();
-      } else {
-        abrirModalPeso(connectOrigin, hitNode);
-        connectOrigin = null;
+        if (state.algoritmo === 'Dijkstra') {
+          abrirModalPeso(u, v);
+        } else {
+          stopAuto();
+          const pesoActual = (state.grafo[u] && state.grafo[u][v]) ? state.grafo[u][v] : 1;
+          state = pyCall('api_agregar_arista', u, v, pesoActual);
+          syncGraphUI();
+        }
       }
     } else if (currentTool === 'eliminar') {
       stopAuto();
-      if (hitNode) {
-        state = pyCall('api_eliminar_nodo', hitNode);
-        syncUI();
-      } else {
+      if (hitNode) { state = pyCall('api_eliminar_nodo', hitNode); syncGraphUI(); }
+      else {
         const hitEdge = edgeAt(px, py);
-        if (hitEdge) {
-          state = pyCall('api_eliminar_arista', hitEdge[0], hitEdge[1]);
-          syncUI();
-        }
+        if (hitEdge) { state = pyCall('api_eliminar_arista', hitEdge[0], hitEdge[1]); syncGraphUI(); }
       }
     } else if (currentTool === 'inicio' && hitNode) {
-      stopAuto();
-      state = pyCall('api_fijar_inicio', hitNode);
-      syncUI();
+      stopAuto(); state = pyCall('api_fijar_inicio', hitNode); syncGraphUI();
     } else if (currentTool === 'destino' && hitNode) {
-      stopAuto();
-      state = pyCall('api_fijar_destino', hitNode);
-      syncUI();
+      stopAuto(); state = pyCall('api_fijar_destino', hitNode); syncGraphUI();
     }
   });
 
@@ -493,8 +924,7 @@
     if (!draggingNode || !state) return;
     const [px, py] = getPointerPos(e);
     if (Math.hypot(px - dragStartPx[0], py - dragStartPx[1]) > 4) didDrag = true;
-    const [nx, ny] = toNorm(px, py);
-    state.posiciones[draggingNode] = [nx, ny];
+    state.posiciones[draggingNode] = toNorm(px, py);
     draw();
   });
 
@@ -507,30 +937,21 @@
     didDrag = false;
   });
 
-  // Atajo en PC: clic derecho elimina nodo o unión desde cualquier modo
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     if (!state) return;
     stopAuto();
     const [px, py] = getPointerPos(e);
     const hitNode = nodeAt(px, py);
-    if (hitNode) {
-      state = pyCall('api_eliminar_nodo', hitNode);
-      syncUI();
-      return;
-    }
+    if (hitNode) { state = pyCall('api_eliminar_nodo', hitNode); syncGraphUI(); return; }
     const hitEdge = edgeAt(px, py);
-    if (hitEdge) {
-      state = pyCall('api_eliminar_arista', hitEdge[0], hitEdge[1]);
-      syncUI();
-    }
+    if (hitEdge) { state = pyCall('api_eliminar_arista', hitEdge[0], hitEdge[1]); syncGraphUI(); }
   });
 
-  // ---------- Controles de Herramientas y Algoritmo ----------
   const HINTS = {
-    editar: 'Toca vacío para crear nodo · Arrastra para mover',
-    conectar: 'Toca el nodo origen y luego el nodo destino',
-    eliminar: 'Toca un nodo o una línea para eliminar',
+    editar: 'Toca vacío para crear · Arrastra para mover',
+    conectar: 'Toca nodo origen y nodo destino para unir',
+    eliminar: 'Toca un nodo o una unión para eliminar',
     inicio: 'Toca el nodo que será el INICIO',
     destino: 'Toca el nodo que será la META'
   };
@@ -545,22 +966,29 @@
 
   function setAlg(alg) {
     stopAuto();
-    state = pyCall('api_configurar', alg, state.modo_oraculo);
-    syncUI();
+    state = pyCall('api_configurar', alg, state.modo_oraculo, alg === 'Dijkstra', state.desempate);
+    syncGraphUI();
   }
-
+  function setUsarMeta(usarMeta) {
+    stopAuto();
+    state = pyCall('api_configurar', state.algoritmo, state.modo_oraculo, usarMeta, state.desempate);
+    syncGraphUI();
+  }
+  function setDesempate(regla) {
+    stopAuto();
+    state = pyCall('api_configurar', state.algoritmo, state.modo_oraculo, state.usar_meta, regla);
+    syncGraphUI();
+  }
   function setModoOraculo(activo) {
     stopAuto();
-    state = pyCall('api_configurar', state.algoritmo, activo);
-    syncUI();
+    state = pyCall('api_configurar', state.algoritmo, activo, state.usar_meta, state.desempate);
+    syncGraphUI();
   }
-
   function avanzarPaso() {
     state = pyCall('api_avanzar');
-    syncUI();
+    syncGraphUI();
     if (state.sim && state.sim.terminado) stopAuto();
   }
-
   function toggleAuto() {
     if (state.modo_oraculo) return;
     if (autoTimer) { stopAuto(); return; }
@@ -570,37 +998,18 @@
     autoTimer = setInterval(() => {
       if (!state.sim || state.sim.terminado) { stopAuto(); return; }
       avanzarPaso();
-    }, 800);
+    }, 1100);
   }
-
   function stopAuto() {
     if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
     const btn = document.getElementById('btnAuto');
     btn.textContent = 'Auto';
     btn.classList.remove('btn-yellow');
   }
+  function reiniciarSim() { stopAuto(); state = pyCall('api_reiniciar_sim'); syncGraphUI(); }
+  function cargarPreset(nombre) { stopAuto(); connectOrigin = null; state = pyCall('api_cargar_preset', nombre); syncGraphUI(); }
+  function limpiarTodo() { stopAuto(); connectOrigin = null; state = pyCall('api_limpiar_todo'); syncGraphUI(); }
 
-  function reiniciarSim() {
-    stopAuto();
-    state = pyCall('api_reiniciar_sim');
-    syncUI();
-  }
-
-  function cargarPreset(nombre) {
-    stopAuto();
-    connectOrigin = null;
-    state = pyCall('api_cargar_preset', nombre);
-    syncUI();
-  }
-
-  function limpiarTodo() {
-    stopAuto();
-    connectOrigin = null;
-    state = pyCall('api_limpiar_todo');
-    syncUI();
-  }
-
-  // ---------- Modal Peso ----------
   function abrirModalPeso(u, v) {
     pendingEdge = [u, v];
     const actual = (state.grafo[u] && state.grafo[u][v]) ? state.grafo[u][v] : 5;
@@ -610,15 +1019,8 @@
     document.getElementById('weightModal').classList.add('open');
     setTimeout(() => { inp.focus(); inp.select(); }, 50);
   }
-
   function setQuickWeight(val) { document.getElementById('weightInput').value = val; }
-
-  function cerrarModalPeso() {
-    pendingEdge = null;
-    document.getElementById('weightModal').classList.remove('open');
-    draw();
-  }
-
+  function cerrarModalPeso() { pendingEdge = null; document.getElementById('weightModal').classList.remove('open'); draw(); }
   function confirmarPeso() {
     if (!pendingEdge) return;
     const val = parseInt(document.getElementById('weightInput').value, 10);
@@ -626,64 +1028,75 @@
     stopAuto();
     state = pyCall('api_agregar_arista', pendingEdge[0], pendingEdge[1], val);
     cerrarModalPeso();
-    syncUI();
+    syncGraphUI();
   }
-
   document.getElementById('weightInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') confirmarPeso();
     if (e.key === 'Escape') cerrarModalPeso();
   });
 
-  // ---------- Modal Comparador ----------
   function abrirComparador() {
     const res = pyCall('api_comparar');
     const body = document.getElementById('compBody');
     if (res.error) {
       body.innerHTML = `<p style="color:var(--red)">${res.error}</p>`;
-    } else {
+    } else if (res.modo === 'recorrido') {
       const filas = res.resultados.map(r => `
-        <tr>
-          <td><strong>${r.algoritmo}</strong></td>
-          <td>${r.encontro ? r.ruta.join(' → ') : '<span style="color:var(--red)">Sin ruta</span>'}</td>
-          <td>${r.encontro ? r.saltos : '-'}</td>
-          <td><strong style="color:var(--yellow)">${r.encontro ? r.costo_real : '-'}</strong></td>
-          <td>${r.explorados}</td>
-        </tr>
+        <tr><td><strong>${r.algoritmo}</strong></td><td style="color:var(--cyan)">${r.orden_visita.join(' → ')}</td><td>${r.explorados}</td></tr>
       `).join('');
       body.innerHTML = `
-        <table class="comp-table">
-          <thead><tr><th>Alg.</th><th>Ruta</th><th>Saltos</th><th>Costo Real</th><th>Explorados</th></tr></thead>
-          <tbody>${filas}</tbody>
-        </table>
-        <div class="tutor-box ok" style="margin-top:10px;">${res.veredicto}</div>
-      `;
+        <table class="comp-table"><thead><tr><th>Algoritmo</th><th>Orden completo de visita</th><th>Nodos</th></tr></thead><tbody>${filas}</tbody></table>
+        <div class="tutor-box ok" style="margin-top:10px;">${res.veredicto}</div>`;
+    } else {
+      const filas = res.resultados.map(r => `
+        <tr><td><strong>${r.algoritmo}</strong></td><td>${r.encontro ? r.ruta.join(' → ') : '<span style="color:var(--red)">Sin ruta</span>'}</td>
+        <td>${r.encontro ? r.saltos : '-'}</td><td><strong style="color:var(--yellow)">${r.encontro ? r.costo_real : '-'}</strong></td><td>${r.explorados}</td></tr>
+      `).join('');
+      body.innerHTML = `
+        <table class="comp-table"><thead><tr><th>Alg.</th><th>Ruta</th><th>Saltos</th><th>Costo Real</th><th>Explorados</th></tr></thead><tbody>${filas}</tbody></table>
+        <div class="tutor-box ok" style="margin-top:10px;">${res.veredicto}</div>`;
     }
     document.getElementById('compModal').classList.add('open');
   }
-
   function cerrarComparador() { document.getElementById('compModal').classList.remove('open'); }
 
-  // ---------- Sincronización de UI ----------
-  function syncUI() {
+  function syncGraphUI() {
     if (!state) return;
+    const esDijkstra = state.algoritmo === 'Dijkstra';
+    document.getElementById('graphHeaderTitle').textContent = `AlgoLab PY · ${state.algoritmo}`;
 
-    // Botones algoritmo y modo
     document.querySelectorAll('.alg-btn').forEach(b => b.classList.toggle('active', b.dataset.alg === state.algoritmo));
+    document.getElementById('btnRecorrido').classList.toggle('active', !state.usar_meta);
+    document.getElementById('btnMeta').classList.toggle('active', state.usar_meta);
+    document.getElementById('btnDesLibre').classList.toggle('active', state.desempate === 'libre');
+    document.getElementById('btnDesAlfa').classList.toggle('active', state.desempate === 'alfabetico');
     document.getElementById('btnRayosX').classList.toggle('active', !state.modo_oraculo);
     document.getElementById('btnOraculo').classList.toggle('active', state.modo_oraculo);
+    document.getElementById('bloqueDesempate').style.display = esDijkstra ? 'none' : 'block';
+
+    // Guía Didáctica Paso a Paso
+    document.getElementById('graphGuideTitle').textContent = state.guia.titulo;
+    document.getElementById('graphGuideWhat').textContent = state.guia.que_paso;
+    document.getElementById('graphGuideNext').textContent = state.guia.como_seguir;
+
+    const pill = document.getElementById('pillPesos');
+    if (esDijkstra) {
+      pill.textContent = 'Pesos activos (toca una línea para editar)';
+      pill.className = 'pill-info pesos-on';
+    } else {
+      pill.textContent = `Pesos ocultos (${state.algoritmo} los ignora)`;
+      pill.className = 'pill-info';
+    }
 
     const btnPaso = document.getElementById('btnPaso');
     const btnAuto = document.getElementById('btnAuto');
     const banner = document.getElementById('canvasBanner');
-
     if (state.modo_oraculo) {
-      btnAuto.disabled = true;
-      btnAuto.style.opacity = '0.4';
-      btnPaso.textContent = state.sim ? 'Esperando clic...' : 'Iniciar Reto';
+      btnAuto.disabled = true; btnAuto.style.opacity = '0.4';
+      btnPaso.textContent = (state.sim && !state.sim.terminado) ? 'Toca el nodo...' : 'Iniciar Reto';
       btnPaso.disabled = Boolean(state.sim && !state.sim.terminado);
     } else {
-      btnAuto.disabled = false;
-      btnAuto.style.opacity = '1';
+      btnAuto.disabled = false; btnAuto.style.opacity = '1';
       btnPaso.textContent = 'Paso >';
       btnPaso.disabled = false;
     }
@@ -691,60 +1104,66 @@
     const oracleWaiting = state.modo_oraculo && state.sim && !state.sim.terminado;
     banner.classList.toggle('oracle-active', oracleWaiting);
     document.getElementById('escenarioTitulo').textContent = oracleWaiting
-      ? `ORÁCULO (${state.algoritmo}): Toca el siguiente nodo en el mapa`
+      ? `ORÁCULO (${state.algoritmo}): Toca el siguiente nodo azul`
       : state.titulo_escenario;
 
-    // Panel Rayos X
     const sim = state.sim;
     const xrayMeta = document.getElementById('xrayMeta');
     const xrayLabel = document.getElementById('xrayEstructuraLabel');
     const xrayChips = document.getElementById('xrayChips');
+    const xrayRecorrido = document.getElementById('xrayRecorrido');
     const xrayRuta = document.getElementById('xrayRuta');
     xrayChips.innerHTML = '';
     xrayRuta.textContent = '';
 
     if (!sim) {
-      xrayMeta.innerHTML = `Inicio: <strong>${state.inicio || '—'}</strong> · Meta: <strong>${state.destino || '—'}</strong> · Nodos: <strong>${Object.keys(state.grafo).length}</strong>`;
+      const metaTxt = state.usar_meta ? ` · Meta: <strong>${state.destino || '—'}</strong>` : ' · <strong>Recorrido Completo</strong>';
+      xrayMeta.innerHTML = `Inicio: <strong>${state.inicio || '—'}</strong>${metaTxt} · Nodos: <strong>${Object.keys(state.grafo).length}</strong>`;
       xrayLabel.textContent = '';
+      xrayRecorrido.style.display = 'none';
     } else if (sim.sin_ruta) {
-      xrayMeta.innerHTML = `<span style="color:var(--red); font-weight:700;">No existe ruta entre ${state.inicio} y ${state.destino}.</span>`;
+      xrayMeta.innerHTML = `<span style="color:var(--red); font-weight:700;">Sin ruta entre ${state.inicio} y ${state.destino}.</span>`;
       xrayLabel.textContent = '';
+      xrayRecorrido.style.display = 'block';
+      xrayRecorrido.textContent = `Visitados: ${sim.orden_visita.join(' → ')}`;
     } else {
-      xrayMeta.innerHTML = `Paso <strong>${sim.paso}</strong> · Expandido: <strong style="color:var(--yellow)">${sim.actual}</strong> · Cerrados: ${sim.procesados.join(', ')}`;
+      xrayMeta.innerHTML = `Paso <strong>${sim.paso}</strong> · Actual: <strong style="color:var(--yellow)">${sim.actual}</strong>`;
+      xrayRecorrido.style.display = 'block';
+      xrayRecorrido.textContent = `Orden de visita: ${sim.orden_visita.join(' → ')}`;
 
+      const validSet = new Set(sim.siguientes_validos || []);
       if (state.modo_oraculo && !sim.terminado) {
-        xrayLabel.textContent = 'Frontera candidata (orden oculto en Modo Oráculo):';
+        xrayLabel.textContent = 'Frontera candidata (toca el siguiente en el mapa):';
         sim.frontera.forEach(n => {
-          const d = state.algoritmo === 'Dijkstra' ? ` (d=${sim.costos[n]})` : '';
+          const extra = esDijkstra ? ` (d=${sim.costos[n]})` : (state.algoritmo === 'BFS' ? ` (L${sim.niveles_bfs[n]})` : '');
           const el = document.createElement('span');
           el.className = 'chip';
-          el.textContent = `${n}${d}`;
+          el.textContent = `${n}${extra}`;
           xrayChips.appendChild(el);
         });
       } else {
         xrayLabel.textContent = sim.estructura_nombre;
         if (sim.estructura_estado.length === 0) {
-          xrayChips.innerHTML = '<span class="chip closed">Vacía</span>';
+          xrayChips.innerHTML = '<span class="chip closed">Vacía (finalizado)</span>';
         } else {
-          sim.estructura_estado.forEach((item, idx) => {
+          sim.estructura_estado.forEach(item => {
             const el = document.createElement('span');
-            const esSiguiente =
-              (state.algoritmo === 'BFS' && idx === 0) ||
-              (state.algoritmo === 'DFS' && idx === sim.estructura_estado.length - 1) ||
-              (state.algoritmo === 'Dijkstra' && idx === 0);
-            el.className = 'chip' + (esSiguiente ? ' next' : '');
-            el.textContent = item;
+            el.className = 'chip' + (validSet.has(item.nodo) ? ' next' : '');
+            el.textContent = item.texto;
             xrayChips.appendChild(el);
           });
         }
       }
-
-      if (sim.terminado && sim.ruta.length) {
-        xrayRuta.textContent = `Meta: ${sim.ruta.join(' → ')} | Total: ${sim.costo_total} ${sim.unidad} (costo real: ${sim.costo_real_ruta})`;
+      if (sim.terminado) {
+        if (sim.usar_meta && sim.ruta.length) {
+          const extraCosto = esDijkstra ? '' : ` (costo ponderado real: ${sim.costo_real_ruta})`;
+          xrayRuta.textContent = `Meta: ${sim.ruta.join(' → ')} | ${sim.costo_total} ${sim.unidad}${extraCosto}`;
+        } else {
+          xrayRuta.textContent = `Recorrido completo finalizado (${sim.orden_visita.length} nodos alcanzados).`;
+        }
       }
     }
 
-    // Tutor Adaptativo
     const t = state.tutor;
     const tBox = document.getElementById('tutorBox');
     tBox.textContent = t.mensaje;
@@ -756,11 +1175,8 @@
     draw();
   }
 
-  // ---------- Renderizado del Canvas ----------
   function draw() {
     ctx.clearRect(0, 0, W, H);
-
-    // Rejilla sutil de ingeniería
     ctx.strokeStyle = 'rgba(48, 54, 82, 0.25)';
     ctx.lineWidth = 1;
     for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
@@ -768,11 +1184,14 @@
 
     if (!state) return;
     const sim = state.sim;
+    const esDijkstra = state.algoritmo === 'Dijkstra';
     const ruta = (sim && sim.ruta) ? sim.ruta : [];
+
     const aristasRuta = new Set();
     for (let i = 0; i < ruta.length - 1; i++) aristasRuta.add([ruta[i], ruta[i + 1]].sort().join('|'));
+    const aristasArbol = new Set();
+    if (sim && sim.aristas_arbol) sim.aristas_arbol.forEach(([u, v]) => aristasArbol.add([u, v].sort().join('|')));
 
-    // 1. Aristas
     const dibujadas = new Set();
     for (const [u, vecinos] of Object.entries(state.grafo)) {
       const [x1, y1] = toPx(...state.posiciones[u]);
@@ -782,89 +1201,244 @@
         dibujadas.add(key);
         const [x2, y2] = toPx(...state.posiciones[v]);
         const enRuta = aristasRuta.has(key);
+        const enArbol = aristasArbol.has(key);
 
         ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.strokeStyle = enRuta ? '#4ade80' : '#475569';
-        ctx.lineWidth = enRuta ? 4.5 : 2.2;
+        ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+        ctx.strokeStyle = enRuta ? '#4ade80' : (enArbol ? '#22d3ee' : '#475569');
+        ctx.lineWidth = enRuta ? 4.5 : (enArbol ? 3.2 : 2);
         ctx.stroke();
 
-        // Etiqueta de peso
-        const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-        ctx.fillStyle = '#121521';
-        ctx.strokeStyle = enRuta ? '#4ade80' : '#475569';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(mx - 15, my - 11, 30, 22, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#facc15';
-        ctx.font = 'bold 12px ui-monospace, monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(String(peso), mx, my);
+        if (esDijkstra) {
+          const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+          ctx.fillStyle = '#121521';
+          ctx.strokeStyle = enRuta ? '#4ade80' : (enArbol ? '#22d3ee' : '#475569');
+          ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.roundRect(mx - 15, my - 11, 30, 22, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#facc15';
+          ctx.font = 'bold 12px ui-monospace, monospace';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(String(peso), mx, my);
+        }
       }
     }
 
-    // 2. Nodos
     const procesados = new Set(sim ? sim.procesados : []);
     const frontera = new Set(sim ? sim.frontera : []);
     const actual = sim ? sim.actual : null;
     const costos = sim ? sim.costos : {};
+    const ordenMapa = sim ? sim.orden_mapa : {};
+    const nivelesBfs = sim ? sim.niveles_bfs : {};
     const R = W < 500 ? 20 : 23;
 
     for (const [nombre, [nx, ny]] of Object.entries(state.posiciones)) {
       const [x, y] = toPx(nx, ny);
-      let fill = '#1e2235';
-      let stroke = '#60a5fa';
-      let lw = 2.5;
-      let textColor = '#e2e8f0';
-
-      if (procesados.has(nombre)) { fill = '#334155'; stroke = '#64748b'; }
+      let fill = '#1e2235', stroke = '#60a5fa', lw = 2.5, textColor = '#e2e8f0';
+      if (procesados.has(nombre)) { fill = '#1e3a5f'; stroke = '#22d3ee'; }
       if (frontera.has(nombre)) { fill = '#2563eb'; stroke = '#93c5fd'; textColor = '#ffffff'; lw = 3.5; }
       if (nombre === actual) { fill = '#facc15'; stroke = '#fef08a'; textColor = '#0f111a'; lw = 3.5; }
       if (ruta.includes(nombre)) { fill = '#4ade80'; stroke = '#bbf7d0'; textColor = '#072012'; lw = 3.5; }
-
       if (nombre === state.inicio) { stroke = '#4ade80'; lw = 4; }
-      if (nombre === state.destino) { stroke = '#f87171'; lw = 4; }
+      if (state.usar_meta && nombre === state.destino) { stroke = '#f87171'; lw = 4; }
       if (nombre === connectOrigin) { stroke = '#fb923c'; lw = 4.5; }
 
-      // Halo exterior en nodos candidatos durante Modo Oráculo
       if (state.modo_oraculo && sim && !sim.terminado && frontera.has(nombre)) {
-        ctx.beginPath();
-        ctx.arc(x, y, R + 6, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(192, 132, 252, 0.75)';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, y, R + 6, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(192, 132, 252, 0.8)'; ctx.lineWidth = 2.5; ctx.stroke();
       }
-
-      ctx.beginPath();
-      ctx.arc(x, y, R, 0, Math.PI * 2);
-      ctx.fillStyle = fill;
-      ctx.fill();
-      ctx.lineWidth = lw;
-      ctx.strokeStyle = stroke;
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2);
+      ctx.fillStyle = fill; ctx.fill(); ctx.lineWidth = lw; ctx.strokeStyle = stroke; ctx.stroke();
 
       ctx.fillStyle = textColor;
       ctx.font = 'bold 14px ui-monospace, monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(nombre, x, y);
 
-      // Etiquetas superiores (INICIO / META / distancia Dijkstra)
       const tags = [];
       if (nombre === state.inicio) tags.push('INICIO');
-      if (nombre === state.destino) tags.push('META');
-      if (costos[nombre] !== undefined) tags.push(`d=${costos[nombre]}`);
+      if (state.usar_meta && nombre === state.destino) tags.push('META');
+      if (ordenMapa[nombre] !== undefined) tags.push(`#${ordenMapa[nombre]}`);
+      if (state.algoritmo === 'BFS' && nivelesBfs[nombre] !== undefined) tags.push(`L${nivelesBfs[nombre]}`);
+      if (esDijkstra && costos[nombre] !== undefined) tags.push(`d=${costos[nombre]}`);
       if (tags.length) {
         ctx.fillStyle = '#e2e8f0';
         ctx.font = 'bold 10px ui-monospace, monospace';
         ctx.fillText(tags.join(' · '), x, y - R - 11);
       }
     }
+  }
+
+  // =========================================================
+  // MÓDULO DEL ALGORITMO DE EUCLIDES
+  // =========================================================
+
+  function eucAplicarNumeros() {
+    eucStopAuto();
+    const a = parseInt(document.getElementById('eucInputA').value, 10);
+    const b = parseInt(document.getElementById('eucInputB').value, 10);
+    if (isNaN(a) || isNaN(b)) return;
+    eucState = pyCall('api_euc_iniciar', a, b, eucState.modo_practica);
+    document.getElementById('eucUserQ').value = '';
+    document.getElementById('eucUserR').value = '';
+    syncEuclidesUI();
+  }
+
+  function eucSetModo(practica) {
+    eucStopAuto();
+    const a = parseInt(document.getElementById('eucInputA').value, 10) || eucState.a_orig;
+    const b = parseInt(document.getElementById('eucInputB').value, 10) || eucState.b_orig;
+    eucState = pyCall('api_euc_iniciar', a, b, practica);
+    document.getElementById('eucUserQ').value = '';
+    document.getElementById('eucUserR').value = '';
+    syncEuclidesUI();
+  }
+
+  function eucPreset(nombre) {
+    eucStopAuto();
+    eucState = pyCall('api_euc_preset', nombre);
+    document.getElementById('eucInputA').value = eucState.a_orig;
+    document.getElementById('eucInputB').value = eucState.b_orig;
+    document.getElementById('eucUserQ').value = '';
+    document.getElementById('eucUserR').value = '';
+    syncEuclidesUI();
+  }
+
+  function eucAvanzar() {
+    eucState = pyCall('api_euc_avanzar');
+    syncEuclidesUI();
+    if (eucState.terminado) eucStopAuto();
+  }
+
+  function eucToggleAuto() {
+    if (eucState.modo_practica) return;
+    if (eucAutoTimer) { eucStopAuto(); return; }
+    document.getElementById('eucBtnAuto').textContent = 'Pausar';
+    document.getElementById('eucBtnAuto').classList.add('btn-yellow');
+    eucAvanzar();
+    eucAutoTimer = setInterval(() => {
+      if (!eucState || eucState.terminado) { eucStopAuto(); return; }
+      eucAvanzar();
+    }, 1200);
+  }
+
+  function eucStopAuto() {
+    if (eucAutoTimer) { clearInterval(eucAutoTimer); eucAutoTimer = null; }
+    const btn = document.getElementById('eucBtnAuto');
+    btn.textContent = 'Auto';
+    btn.classList.remove('btn-yellow');
+  }
+
+  function eucComprobar() {
+    const q = parseInt(document.getElementById('eucUserQ').value, 10);
+    const r = parseInt(document.getElementById('eucUserR').value, 10);
+    if (isNaN(q) || isNaN(r)) return;
+    const pasosAntes = eucState.pasos.length;
+    eucState = pyCall('api_euc_verificar', q, r);
+    if (eucState.pasos.length > pasosAntes) {
+      document.getElementById('eucUserQ').value = '';
+      document.getElementById('eucUserR').value = '';
+      document.getElementById('eucUserQ').focus();
+    }
+    syncEuclidesUI();
+  }
+
+  function eucPedirPista() {
+    eucState = pyCall('api_euc_pista');
+    syncEuclidesUI();
+  }
+
+  ['eucUserQ', 'eucUserR'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') eucComprobar();
+    });
+  });
+
+  function syncEuclidesUI() {
+    if (!eucState) return;
+    document.getElementById('eucBtnGuiado').classList.toggle('active', !eucState.modo_practica);
+    document.getElementById('eucBtnPractica').classList.toggle('active', eucState.modo_practica);
+
+    const ctrlGuiado = document.getElementById('eucControlesGuiado');
+    ctrlGuiado.style.display = eucState.modo_practica ? 'none' : 'grid';
+    document.getElementById('eucBtnPaso').disabled = eucState.terminado;
+
+    // Guía paso a paso
+    document.getElementById('eucGuideTitle').textContent = eucState.guia.titulo;
+    document.getElementById('eucGuideWhat').textContent = eucState.guia.que_paso;
+    document.getElementById('eucGuideNext').textContent = eucState.guia.como_seguir;
+
+    // Pizarra de valores actuales
+    const ultimo = eucState.pasos.length ? eucState.pasos[eucState.pasos.length - 1] : null;
+    document.getElementById('eucBadgePaso').textContent = `Paso ${eucState.pasos.length}`;
+    document.getElementById('eucValA').textContent = eucState.cur_a;
+    document.getElementById('eucValB').textContent = eucState.cur_b;
+    document.getElementById('eucValQ').textContent = ultimo ? ultimo.q : '—';
+
+    const boxR = document.getElementById('eucBoxR');
+    const lblR = document.getElementById('eucLblR');
+    const valR = document.getElementById('eucValR');
+    if (eucState.terminado) {
+      boxR.className = 'euc-box hi-mcd';
+      lblR.textContent = 'MCD ENCONTRADO';
+      valR.style.color = 'var(--green)';
+      valR.textContent = eucState.mcd;
+      document.getElementById('eucFormula').textContent =
+        `¡Terminado! MCD(${eucState.a_orig}, ${eucState.b_orig}) = ${eucState.mcd}`;
+    } else {
+      boxR.className = 'euc-box hi-r';
+      lblR.textContent = 'Último Residuo (r)';
+      valR.style.color = 'var(--cyan)';
+      valR.textContent = ultimo ? ultimo.r : '—';
+      document.getElementById('eucFormula').textContent =
+        `Siguiente división: ${eucState.cur_a} = q × ${eucState.cur_b} + r`;
+    }
+
+    // Caja de Práctica
+    const pBox = document.getElementById('eucPracticeBox');
+    if (eucState.modo_practica && !eucState.terminado) {
+      pBox.classList.remove('hidden');
+      document.getElementById('eucPracticePrompt').textContent =
+        `Tu turno (Paso ${eucState.pasos.length + 1}): Divide ${eucState.cur_a} entre ${eucState.cur_b}`;
+    } else {
+      pBox.classList.add('hidden');
+    }
+
+    // Bézout bonus al terminar
+    const bBox = document.getElementById('eucBezoutBox');
+    if (eucState.terminado && eucState.bezout) {
+      bBox.classList.remove('hidden');
+      bBox.innerHTML =
+        `<strong style="color:var(--green)">Identidad de Bézout (Euclides Extendido):</strong><br>` +
+        `<code>${eucState.bezout.texto}</code> — esta misma relación es la que usa la criptografía RSA para hallar inversos modulares.`;
+    } else {
+      bBox.classList.add('hidden');
+    }
+
+    // Tabla de traza
+    const tbody = document.getElementById('eucTablaBody');
+    if (eucState.pasos.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted); font-family:system-ui;">Aún no se han ejecutado pasos.</td></tr>';
+    } else {
+      tbody.innerHTML = eucState.pasos.map(p => `
+        <tr class="${p.es_final ? 'row-final' : ''}">
+          <td>#${p.num}</td>
+          <td>${p.a}</td>
+          <td>${p.b}</td>
+          <td>${p.ecuacion}</td>
+          <td>${p.r}</td>
+          <td style="font-family:system-ui;">${p.es_final ? `Fin → MCD = ${p.b}` : `Desplazar: a←${p.b}, b←${p.r}`}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Tutor
+    const t = eucState.tutor;
+    const tBox = document.getElementById('eucTutorBox');
+    tBox.textContent = t.mensaje;
+    tBox.className = 'tutor-box ' + (t.tipo === 'ok' ? 'ok' : t.tipo === 'error' ? 'error' : '');
+    document.getElementById('eucStPrec').textContent = t.precision + '%';
+    document.getElementById('eucStRacha').textContent = t.racha;
+    document.getElementById('eucStPasos').textContent = eucState.pasos.length;
   }
 
   initPyodide();
